@@ -14,7 +14,7 @@ consumer_secret = config.consumer_secret
 
 #This is a basic listener that just prints received tweets to stdout.
 class StdOutListener(StreamListener):
-
+    
     def on_data(self, data):
         print(data)
         return True

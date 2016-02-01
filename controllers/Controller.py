@@ -13,7 +13,6 @@ class Controller(object):
 		self.auth.set_access_token(ACCESS_TOKEN, ACCESS_TOKEN_SECRET)
 		self.api = tweepy.API(self.auth, parser=tweepy.parsers.JSONParser())
 
-
 		def fetchTweets(self):
 					pub_tweets = self.api.home_timeline()
 					f = open(os.path.dirname(__file__) + "../../Data/tweets.json", "w")

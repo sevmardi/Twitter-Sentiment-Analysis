@@ -1,24 +1,29 @@
 import regex as regex
 import tweepy
 from models import Twitter
-from config import config
 import re
 import os
 import json
+import time
 
-# Variables that contains the user credentials to access Twitter API
-access_token = config.access_token
-access_token_secret = config.access_token_secret
-consumer_key = config.consumer_key
-consumer_secret = config.consumer_secret
+from tweepy.streaming import StreamListener
+from tweepy import OAuthHandler
+from tweepy import Stream
+
+
+""" Read the config file"""
+f = open("../config/config.json")
+config = json.loads(f.read())
+f.close()
+
 
 
 # This is a basic listener that just prints received tweets to stdout.
-class StdOutListener(tweepy.StreamListener):
+class Listener(tweepy.StreamListener):
     def __init__(self):
-        super(StdOutListener, self).__init__()
-        self.count = 0
-        self.tweets = []
+        super(Listener, self).__init__()
+      #  self.identifier = keyword
+        self.time = int(time.time())
         self.tweets_data_path = "../data/tweets.json"
 
     def on_data(self, data):
@@ -58,12 +63,12 @@ class StdOutListener(tweepy.StreamListener):
             f.close()
 
 
-# if __name__ == '__main__':
-#     # This handles Twitter authetification and the connection to Twitter Streaming API
-#     l = StdOutListener()
-#     auth = OAuthHandler(consumer_key, consumer_secret)
-#     auth.set_access_token(access_token, access_token_secret)
-#     stream = Stream(auth, l)
+if __name__ == '__main__':
+    #This handles Twitter authetification and the connection to Twitter Streaming API
+    l = Listener()
+    auth = OAuthHandler(config["consumer_key"], config["consumer_secret"])
+    auth.set_access_token(config["access_token"], config["access_token_secret"])
+    stream = Stream(auth, l)
 
-    # This line filter Twitter Streams to capture Data by the keywords: 'python', 'javascript', 'ruby'
-    # stream.filter(track=['happiness', 'war', 'life'])
+    #This line filter Twitter Streams to capture data by the keywords: 'python', 'javascript', 'ruby'
+    stream.filter(track=['python', 'javascript', 'ruby'])

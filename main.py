@@ -1,12 +1,17 @@
-import router
+from services import Listener
+import json
+
+""" Read the config file"""
+f = open("config/config.json")
+config = json.loads(f.read())
+f.close()
 
 
 class Main(object):
-	def run(self):
-		rotue = router.Router()
-		route.run()
+    def run(self):
+        route = Listener()
+        route.main()
 
 if __name__ == '__main__':
-		app = App()
-		app.run()
-						
+    app = Main()
+    app.run()

@@ -1,22 +1,23 @@
 class Twitter(object):
-    """docstring for Twitter"""
+    tweet = ""
+    datetime = ""
+    user = ""
 
     def __init__(self, arg):
         super(Twitter, self).__init__()
         self.arg = arg
 
     def getTweet(self):
-    	return self.tweet    
+        return self.tweet
 
     def getUser(self):
-    	return self.user
+        return self.user
 
     def setTweet(self, tweet):
-    	self.tweet = tweet
+        self.tweet = tweet
 
-    def setData(self):
-    	self.datetime = date
+    def setData(self, date):
+        self.datetime = date
 
-    def setUser(self):
-    	self.user= user
-    	
+    def setUser(self, user):
+        self.user= user

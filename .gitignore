@@ -1,2 +1,4 @@
-.idea/
-.config
+.idea
+/config
+/myenv
+/myvenv

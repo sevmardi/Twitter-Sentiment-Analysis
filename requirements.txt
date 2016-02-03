@@ -1,2 +1,7 @@
+matplotlib
+pd
+textblob
+pandas
+numpy
 router
 tweepy==3.5.0

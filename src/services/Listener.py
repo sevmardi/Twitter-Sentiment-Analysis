@@ -23,7 +23,7 @@ class Listener(StreamListener):
 
     def __init__(self, api = None, fprefix = 'streamer'):
 
-        self.api = api or API()
+        self.api = api
         self.counter = 0
         self.fprefix = fprefix
         self.output  = open(fprefix + '.'
@@ -46,8 +46,8 @@ class Listener(StreamListener):
                 return False
         elif 'warning' in data:
             warning = json.loads(data)['warnings']
-            print warning['message']
-            return false
+            print (warning['message'])
+            return False
 
     def on_error(self, status):
         print(status)

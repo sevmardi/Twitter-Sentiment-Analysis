@@ -4,7 +4,7 @@ import sys
 
 import pandas as pd
 import tweepy
-from config import candidates
+from src.config import candidates
 from src.config.config import consumer_secret, access_token_secret, access_token, consumer_key
 
 auth = tweepy.OAuthHandler(consumer_key, consumer_secret)

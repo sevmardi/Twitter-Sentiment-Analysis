@@ -1,4 +1,6 @@
 .idea
-/Include
-/Lib
+/include
+/lib
 /Scripts
+/bin
+/pip-selfcheck.json

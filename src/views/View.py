@@ -4,7 +4,6 @@ from tkinter import messagebox
 from tkinter import simpledialog
 import socket
 
-
 class MainPanel:
      def __init__(self):
         self.tweets_to_add = 100
@@ -28,7 +27,6 @@ class MainPanel:
         self.add_status_bar(master)
         self.add_canvas(master)
         self.empty_window()
-
         # start endless loop, filling one thread
         master.mainloop()
 

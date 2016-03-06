@@ -5,7 +5,7 @@ import time
 import sys
 import regex as regex
 import tweepy
-from src.models import Twitter
+from src.models import Tweet
 from tweepy import OAuthHandler
 from tweepy import Stream
 from tweepy import StreamListener
@@ -82,7 +82,7 @@ class Listener(StreamListener):
         return
 
     def create_tweet(self, status):
-        return Twitter(status.text.encode("utf8"), str(status.created_at), status.user.screen_name)
+        return Tweet(status.text.encode("utf8"), str(status.created_at), status.user.screen_name)
 
     def store_tweets(self):
         f = open(os.path.dirname(__file__) + self.store_tweets(), "w")

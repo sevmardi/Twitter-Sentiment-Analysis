@@ -1,7 +1,6 @@
 import json
 import os
 import tweepy
-
 from src import Main
 from src.services import Listener
 
@@ -29,4 +28,4 @@ class TweetController(object):
             return f.read()
 
         def stopStreamingTweets(self):
-            self.stream.disconnect();
+            self.stream.disconnect()

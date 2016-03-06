@@ -2,13 +2,13 @@ import sys
 import threading
 from TwitterAPI.TwitterError import TwitterRequestError, TwitterConnectionError
 from controller.TwitterLib.TweetProcessor import TweetProcessor
-
+from tweepy import error, streaming
 
 class TwitterStreamThread(threading.Thread):
 
     processor = TweetProcessor()
 
-    def __init__(self):
+    def __init__(self, search_word, api, numbers_to_add):
         threading.Thread.__init__(self)
         self.api = api
         self.search_word = search_word

@@ -1,4 +1,4 @@
-from model.tweet import Tweet
+from models import Tweet
 
 
 class TweetProcessor():

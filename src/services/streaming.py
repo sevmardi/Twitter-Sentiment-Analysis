@@ -24,6 +24,6 @@ def main():
         print ("error!")
         stream.disconnect()
 
-        
+
 if __name__ == '__main__':
     main()

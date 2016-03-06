@@ -1,12 +1,14 @@
+import sys
+
 class Twitter(object):
     tweet = ""
     datetime = ""
     user = ""
 
-    def __init__(self, arg):
-        super(Twitter, self).__init__()
-        self.arg = arg
-
+    def __init__(self, Tweet):
+        self.Tweet = Tweet
+        self.mood = 0
+        
     def getTweet(self):
         return self.tweet
 

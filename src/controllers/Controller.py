@@ -1,17 +1,15 @@
 import json
 import os
-
 import tweepy
+
 from src import Main
 from src.services import Listener
 
 
-class Controller(object):
+class TweetController(object):
     """docstring for Controller"""
 
-    def __init__(self, arg):
-        super(Controller, self).__init__()
-        self.arg = arg
+    def __init__(self, server):
         self.auth = tweepy.OAuthHandler(Main.config["consumer_key"], Main.config["consumer_secret"])
         self.auth.set_access_token(Main.config["access_token"], Main.config["access_token_secret"])
         self.api = tweepy.API(self.auth, parser=tweepy.parsers.JSONParser())

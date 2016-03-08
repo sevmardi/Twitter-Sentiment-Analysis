@@ -20,3 +20,5 @@ class Analyze(object):
         if match:
             return match.group()
         return ''
+
+    

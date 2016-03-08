@@ -11,12 +11,6 @@ from tweepy import Stream
 from tweepy import StreamListener
 
 
-""" Read the config file"""
-f = open("../config/config.json")
-config = json.loads(f.read())
-f.close()
-
-
 
 # This is a basic listener that just prints received tweets to stdout.
 class Listener(StreamListener):

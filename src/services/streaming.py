@@ -1,7 +1,7 @@
 from src.services import Listener
 
 import time, tweepy, sys
-
+# http://badhessian.org/2012/10/collecting-real-time-twitter-data-with-the-streaming-api/
 
 ## authentication
 username = '' ## put a valid Twitter username here
@@ -23,7 +23,3 @@ def main():
     except:
         print ("error!")
         stream.disconnect()
-
-
-if __name__ == '__main__':
-    main()

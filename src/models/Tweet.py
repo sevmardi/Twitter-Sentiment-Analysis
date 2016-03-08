@@ -1,6 +1,6 @@
 import sys
 
-class Twitter(object):
+class Tweet(object):
     tweet = ""
     datetime = ""
     user = ""
@@ -8,7 +8,7 @@ class Twitter(object):
     def __init__(self, Tweet):
         self.Tweet = Tweet
         self.mood = 0
-        
+
     def getTweet(self):
         return self.tweet
 

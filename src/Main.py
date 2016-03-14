@@ -1,6 +1,6 @@
 import os
-
-print(os.getcwd())
+# print(os.environ)
+# print(os.getcwd())
 from views import View
 
 
@@ -11,3 +11,7 @@ class Main:
 
 if __name__ == '__main__':
     Main()
+
+
+# import tkinter
+# tkinter._test()

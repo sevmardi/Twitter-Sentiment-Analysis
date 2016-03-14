@@ -9,17 +9,17 @@ class Tweet(object):
         self.Tweet = Tweet
         self.mood = 0
 
-    def getTweet(self):
+    def get_tweet(self):
         return self.tweet
 
-    def getUser(self):
+    def get_user(self):
         return self.user
 
-    def setTweet(self, tweet):
+    def set_tweet(self, tweet):
         self.tweet = tweet
 
-    def setData(self, date):
+    def set_data(self, date):
         self.datetime = date
 
-    def setUser(self, user):
+    def set_user(self, user):
         self.user= user

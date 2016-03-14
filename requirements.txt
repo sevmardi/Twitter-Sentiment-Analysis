@@ -9,8 +9,6 @@ pd==0.0.1
 pip==8.0.2
 python-dateutil==2.4.2
 pytz==2015.7
-requests==2.9.1
-router==0.1
 six==1.10.0
 textblob==0.11.0
 matplotlib

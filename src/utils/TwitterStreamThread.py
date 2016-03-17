@@ -31,5 +31,5 @@ class TwitterStreamThread(threading.Thread):
         except TwitterConnectionError:
             print("Could not connect to the internet. Please check your connection.")
         except:
-            if.self.loop_error:
+            if (self.loop_error):
                    print("Could not start stream; Check connection\n" + sys.exc_info()[0])

@@ -5,6 +5,9 @@ class TweetProcessor():
     mood_analyzer = MoodAnalyzer()
     db = tweetsjson
 
+    def __init__(self):
+        self.analyzed_tweet = None
+
     def process(self, tweet_json):
         self.analyzed_tweet = self.mood_analyzer.analyse(Tweet(tweet_json))
 
@@ -12,7 +15,6 @@ class TweetProcessor():
             self.analyzed_tweet = None
             print(self.db.get_count())
         except:
-            self.analyzed_tweet = None
             print("Cloud not connect to database")
             return False
 

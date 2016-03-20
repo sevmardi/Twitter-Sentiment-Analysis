@@ -1,15 +1,20 @@
 from models import Tweet
+from services import Analyser
+
+"""
+
+"""
 
 
 class TweetProcessor():
-    mood_analyzer = MoodAnalyzer()
-    db = tweetsjson
-
+    mood_analyzer = Analyser()
+    tweets = "data/tweets"
+    db = tweets
     def __init__(self):
         self.analyzed_tweet = None
 
     def process(self, tweet_json):
-        self.analyzed_tweet = self.mood_analyzer.analyse(Tweet(tweet_json))
+        self.analyzed_tweet = self.Analyser.analyse(Tweet(tweet_json))
         try:
             self.analyzed_tweet = None
             print(self.db.get_count())

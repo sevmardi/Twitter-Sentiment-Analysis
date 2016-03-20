@@ -3,6 +3,11 @@ import tweepy
 from src import Main
 from services import TweetStreamer as stream
 from config import config
+import Main
+
+"""
+
+"""
 
 
 class TweetController(object):
@@ -12,15 +17,15 @@ class TweetController(object):
         self.auth = tweepy.OAuthHandler(config["consumer_key"], config["consumer_secret"])
         self.auth.set_access_token(config["access_token"], config["access_token_secret"])
         self.api = tweepy.API(self.auth, parser=tweepy.parsers.JSONParser())
+        self.server = server
 
-    def start_stream(self):
+        # def start_stream(self, tweets):
         """
 		Start a Twitter stream and analyse incoming tweets.
 		"""
         # pub_tweets = self.api.home_timeline()
         # f = open(os.path.dirname(__file__) + "../../Data/tweets.json", "w")
         # f.write(json.dumps(pub_tweets))
-        self.tweet_listener = Listener(app=self.server)
 
     def start_streaming_tweets(self, keywords):
         self.tweet_listener = TweetStreamer()

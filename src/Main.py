@@ -1,7 +1,11 @@
-import os
+import json
 # print(os.environ)
 # print(os.getcwd())
 from views import MainPanel
+
+f = open("config/config.json")
+config = json.loads(f.read())
+f.close()
 
 
 class Main:
@@ -11,5 +15,3 @@ class Main:
 
 if __name__ == '__main__':
     Main()
-
-

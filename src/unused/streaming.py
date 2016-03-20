@@ -1,4 +1,4 @@
-from src.services import Listener
+from src.services import TweetStreamer
 import time, tweepy, sys
 
 # http://badhessian.org/2012/10/collecting-real-time-twitter-data-with-the-streaming-api/
@@ -13,7 +13,7 @@ api = tweepy.API(auth)
 def main():
     track = ['obama', 'romney']
 
-    listen = Listener(api, 'myprefix')
+    listen = TweetStreamer(api, 'myprefix')
     stream = tweepy.Stream(auth, listen)
 
     print("Streaming started...")

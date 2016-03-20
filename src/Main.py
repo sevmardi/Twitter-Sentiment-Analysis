@@ -13,5 +13,3 @@ if __name__ == '__main__':
     Main()
 
 
-# import tkinter
-# tkinter._test()

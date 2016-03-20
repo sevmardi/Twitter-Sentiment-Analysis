@@ -2,7 +2,7 @@ import json
 import os
 import tweepy
 from src import Main
-from src.services import Listener
+from src.services import TweetStreamer
 
 
 class TweetController(object):
@@ -19,7 +19,7 @@ class TweetController(object):
             f.write(json.dumps(pub_tweets))
 
         def start_streaming_tweets(self, keywords):
-            self.tweet_listener = Listener()
+            self.tweet_listener = TweetStreamer()
             self.stream = tweepy.Stream(auth=self.auth, listener=self.tweet_listener)
             self.stream.filter(track=keywords, async=True)
 

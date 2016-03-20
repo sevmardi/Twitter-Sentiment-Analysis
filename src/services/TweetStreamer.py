@@ -1,35 +1,27 @@
 import json
 import os
-import re
 import time
 import sys
-import regex as regex
-import tweepy
-from src.models import Tweet
-from tweepy import OAuthHandler
-from tweepy import Stream
-from tweepy import StreamListener
-
+from tweepy import *
+from models import Tweet
 
 
 # This is a basic listener that just prints received tweets to stdout.
-class Listener(StreamListener):
-
-    def __init__(self, api = None, fprefix = 'streamer'):
-
+class TweetStreamer(StreamListener):
+    def __init__(self, api=None, fprefix='streamer'):
+        super().__init__(api)
         self.api = api
         self.counter = 0
         self.fprefix = fprefix
-        self.output  = open(fprefix + '.'
-                            + time.strftime('%Y%m%d-%H%M%S') + '.json', 'w')
-        self.delout  = open('delete.txt', 'a')
-
+        self.tweets = []
+        self.output = open(fprefix + '.' + time.strftime('%Y%m%d-%H%M%S') + '.json', 'w')
+        # self.delout = open('delete.txt', 'a')
         self.time = int(time.time())
         self.tweets_data_path = "../data/tweets.json"
+        print("Started streaming..")
 
     def on_data(self, data):
-
-        if  'in_reply_to_status' in data:
+        if 'in_reply_to_status' in data:
             self.on_status(data)
         elif 'delete' in data:
             delete = json.loads(data)['delete']['status']
@@ -40,14 +32,14 @@ class Listener(StreamListener):
                 return False
         elif 'warning' in data:
             warning = json.loads(data)['warnings']
-            print (warning['message'])
+            print(warning['message'])
             return False
 
     def on_error(self, status):
         print(status)
 
     def on_delete(self, status_id, user_id):
-        self.delout.write( str(status_id) + "\n")
+        self.delout.write(str(status_id) + "\n")
         return
 
     def on_limit(self, track):
@@ -55,6 +47,9 @@ class Listener(StreamListener):
         return
 
     def on_error(self, status_code):
+        """
+		Called when a error is recieved from the Twitter api.
+		"""
         sys.stderr.write('Error: ' + str(status_code) + "\n")
         return False
 
@@ -63,23 +58,38 @@ class Listener(StreamListener):
         time.sleep(60)
         return
 
-    def tweetStatus(self, status):
-        if self.count <= 10:
+    def on_status(self, status):
+        """
+        Called when a tweet is recieved. It creates a Tweet object and passes it to the Analyser. It saves the tweet
+        in memory and writes the recieved tweet count to the database.
+        """
+        print("Tweet recieved")
+        if self.counter <= 10:
             self.tweets.append(self.create_tweet(status))
-            self.count = +1
+            self.counter += 1
             return True
         self.store_tweets()
         return False
 
-    def disconnect(self, notice):
-        self.store_tweets()
-        return
-
-    def create_tweet(self, status):
-        return Tweet(status.text.encode("utf8"), str(status.created_at), status.user.screen_name)
-
     def store_tweets(self):
-        f = open(os.path.dirname(__file__) + self.store_tweets(), "w")
+        """
+		Saves in memory tweets to given save save_location.
+		"""
+        print("Saving tweets to tweets.json")
+        f = open(os.path.dirname(__file__) + self.tweets_data_path, "w")
         for tweet in self.tweets:
             f.write(json.dumps(tweet.__dict__))
             f.close()
+
+    def create_tweet(self, status):
+        pass
+
+    def disconnect(self, notice):
+        """
+		Called when twitter sends a disconnect notice
+		Disconnect codes are listed here:
+		https://dev.twitter.com/docs/streaming-apis/messages#Disconnect_messages_disconnect
+		"""
+        print("disconnected")
+        self.store_tweets()
+        return

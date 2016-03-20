@@ -1,12 +1,12 @@
 import os
 # print(os.environ)
 # print(os.getcwd())
-from views import View
+from views import MainPanel
 
 
 class Main:
     def __init__(self):
-        self.view = View.MainPanel()
+        self.view = MainPanel.MainPanel()
 
 
 if __name__ == '__main__':

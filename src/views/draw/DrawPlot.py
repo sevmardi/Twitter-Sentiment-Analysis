@@ -1,6 +1,5 @@
 import gc
 
-
 class DrawPlot:
     def __init__(self, mongo_adapter):
         self.plot_distance = 6

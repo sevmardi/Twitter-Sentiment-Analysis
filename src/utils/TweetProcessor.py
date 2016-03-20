@@ -10,14 +10,10 @@ class TweetProcessor():
 
     def process(self, tweet_json):
         self.analyzed_tweet = self.mood_analyzer.analyse(Tweet(tweet_json))
-
         try:
             self.analyzed_tweet = None
             print(self.db.get_count())
         except:
             print("Cloud not connect to database")
             return False
-
         return True
-
-    

@@ -4,9 +4,13 @@ import time
 import sys
 from tweepy import *
 from models import Tweet
+from services import TweetStreamer
+
+"""
+Class used to retrieve Tweets from the twitter api. It uses the Twitter stream api.
+"""
 
 
-# This is a basic listener that just prints received tweets to stdout.
 class TweetStreamer(StreamListener):
     def __init__(self, api=None, fprefix='streamer'):
         super().__init__(api)
@@ -19,6 +23,7 @@ class TweetStreamer(StreamListener):
         self.time = int(time.time())
         self.tweets_data_path = "../data/tweets.json"
         print("Started streaming..")
+        self.processor = TweetProcessor()
 
     def on_data(self, data):
         if 'in_reply_to_status' in data:

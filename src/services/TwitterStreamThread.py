@@ -4,8 +4,8 @@ from TwitterAPI.TwitterError import TwitterRequestError, TwitterConnectionError
 from controller.TwitterLib.TweetProcessor import TweetProcessor
 from tweepy import error, streaming
 
-class TwitterStreamThread(threading.Thread):
 
+class TwitterStreamThread(threading.Thread):
     processor = TweetProcessor()
 
     def __init__(self, search_word, api, numbers_to_add):
@@ -18,7 +18,7 @@ class TwitterStreamThread(threading.Thread):
 
     def run(self):
         try:
-            r = self.api.request('', {'track' : self.search_word})
+            r = self.api.request('', {'track': self.search_word})
             for tweet_json in r.get_iterator():
                 if not self.processor.process(tweet_json):
                     break
@@ -32,4 +32,4 @@ class TwitterStreamThread(threading.Thread):
             print("Could not connect to the internet. Please check your connection.")
         except:
             if (self.loop_error):
-                   print("Could not start stream; Check connection\n" + sys.exc_info()[0])
+                print("Could not start stream; Check connection\n" + sys.exc_info()[0])

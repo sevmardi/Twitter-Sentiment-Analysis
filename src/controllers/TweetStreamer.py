@@ -4,7 +4,7 @@ import time
 import sys
 from tweepy import *
 from models import Tweet
-from services import TweetStreamer
+from services import TweetProcessor
 
 """
 Class used to retrieve Tweets from the twitter api. It uses the Twitter stream api.

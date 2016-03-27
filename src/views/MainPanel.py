@@ -38,7 +38,6 @@ class MainPanel:
 
     def add_submenu(self, menu):
         sub_menu = Menu(menu)
-
         # Adds a drop down when "File" is clicked
         menu.add_cascade(label="File", menu=sub_menu)
         sub_menu.add_command(label="Fetch 10 tweets", command=self.start_stream_a)

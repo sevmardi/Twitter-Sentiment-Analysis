@@ -67,8 +67,6 @@ class Analyser(object):
         text = re.sub(r'[^a-zA-Z0-9 ]', ' ', text)
         return text
 
-
-
         # def word_in_text(word, text):
         #     word = word.lower()
         #     text = text.lower()

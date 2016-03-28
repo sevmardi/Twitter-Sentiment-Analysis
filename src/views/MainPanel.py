@@ -13,10 +13,10 @@ class MainPanel:
         self.canvas_height = 687
         self.auto_updating = False
 
-        #self.stream = TweetStream(self)
-        #self.mongo_adapter = self.stream.processor.mongo_adapter
+        # self.stream = TweetStream(self)
+        # self.mongo_adapter = self.stream.processor.mongo_adapter
         self.graph = DrawGraph()
-        #self.plot = DrawPlot(self.mongo_adapter)
+        # self.plot = DrawPlot(self.mongo_adapter)
 
         self.root = Tk()
         self.statusVar = StringVar()
@@ -61,7 +61,6 @@ class MainPanel:
         helpMenu.add_command(label="Check active settings", command=self.show_settings)
         helpMenu.add_command(label="About the graph", command=self.show_about_graph)
 
-
     def add_toolbar(self, master):
         # ******* Creating a Toolbar *******
         toolbar = Frame(master, bg="gray")
@@ -73,10 +72,10 @@ class MainPanel:
         inc_plot_but.pack(side=LEFT, padx=2, pady=2)
         dec_plot_but = Button(toolbar, text="Zoom out", command=self.decrease_plot_size)
         dec_plot_but.pack(side=LEFT, padx=2, pady=2)
-       # rig_plot_but = Button(toolbar, text="<", command=self.plot.go_right)
-        #rig_plot_but.pack(side=LEFT, padx=2, pady=2)
-        #lef_plot_but = Button(toolbar, text=">", command=self.plot.go_left)
-        #lef_plot_but.pack(side=LEFT, padx=2, pady=2)
+        # rig_plot_but = Button(toolbar, text="<", command=self.plot.go_right)
+        # rig_plot_but.pack(side=LEFT, padx=2, pady=2)
+        # lef_plot_but = Button(toolbar, text=">", command=self.plot.go_left)
+        # lef_plot_but.pack(side=LEFT, padx=2, pady=2)
         upd_plot_but = Button(toolbar, text="Auto update plot", command=self.update_plot)
         upd_plot_but.pack(side=LEFT, padx=2, pady=2)
 
@@ -133,7 +132,6 @@ class MainPanel:
         if self.test_connection():
             self.set_footer_text('Starting stream to add ' + str(self.tweets_to_add) + " tweets.")
             self.root.update()
-
             # start endless loop, application is not responding untill it ends.
             self.stream.start_stream(self.tweets_to_add)
         else:
@@ -214,6 +212,7 @@ class MainPanel:
         self.empty_window()
         self.graph.increase_graph_size()
         self.draw_graph()
+
     def decrease_graph_size(self):
         self.empty_window()
         self.graph.decrease_graph_size()

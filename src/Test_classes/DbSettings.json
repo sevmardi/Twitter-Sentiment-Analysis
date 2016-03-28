@@ -1,0 +1,5 @@
+{
+  "tweet_db": "tweet_stream",
+  "tweet_db_tweet_collection": "happy",
+  "empty_message": "Fetching new tweets..."
+}

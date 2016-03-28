@@ -11,8 +11,8 @@ class Analyser(object):
             self.mood_values = json.loads(mood_json)['moods']
             self.mood_values_tbd = json.loads(mood_json)['TBD']
             fr.close()
-        except:
-            print('Mood/value file not found.')
+        except BaseException as e:
+            print('Mood/value file not found.', e)
 
     def analyse(self, tweet):
         tweet.mood = self.get_mood(tweet.text)

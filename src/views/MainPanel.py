@@ -4,7 +4,7 @@ from tkinter import simpledialog
 import socket
 from views.draw.DrawGraph import DrawGraph
 from views.draw.DrawPlot import DrawPlot
-
+from controllers import TweetStreamer as TweetStream
 
 class MainPanel:
     def __init__(self):
@@ -13,10 +13,10 @@ class MainPanel:
         self.canvas_height = 687
         self.auto_updating = False
 
-        # self.stream = TweetStream(self)
-        # self.mongo_adapter = self.stream.processor.mongo_adapter
+        self.stream = TweetStream(self)
+        self.mongo_adapter = self.stream.processor.mongo_adapter
         self.graph = DrawGraph()
-        # self.plot = DrawPlot(self.mongo_adapter)
+        self.plot = DrawPlot(self.mongo_adapter)
 
         self.root = Tk()
         self.statusVar = StringVar()
@@ -72,10 +72,10 @@ class MainPanel:
         inc_plot_but.pack(side=LEFT, padx=2, pady=2)
         dec_plot_but = Button(toolbar, text="Zoom out", command=self.decrease_plot_size)
         dec_plot_but.pack(side=LEFT, padx=2, pady=2)
-        # rig_plot_but = Button(toolbar, text="<", command=self.plot.go_right)
-        # rig_plot_but.pack(side=LEFT, padx=2, pady=2)
-        # lef_plot_but = Button(toolbar, text=">", command=self.plot.go_left)
-        # lef_plot_but.pack(side=LEFT, padx=2, pady=2)
+        rig_plot_but = Button(toolbar, text="<", command=self.plot.go_right)
+        rig_plot_but.pack(side=LEFT, padx=2, pady=2)
+        lef_plot_but = Button(toolbar, text=">", command=self.plot.go_left)
+        lef_plot_but.pack(side=LEFT, padx=2, pady=2)
         upd_plot_but = Button(toolbar, text="Auto update plot", command=self.update_plot)
         upd_plot_but.pack(side=LEFT, padx=2, pady=2)
 
@@ -200,7 +200,7 @@ class MainPanel:
         self.graph.auto_updating = False
         self.empty_window()
         self.graph.update_graph(self.canvas, self.root, self.stream.processor.db)
-        # print(self.stream.processor.mongo_adapter.collection.name)
+        print(self.stream.processor.mongo_adapter.collection.name)
 
     def draw_plot(self):
         self.plot.auto_updating = False

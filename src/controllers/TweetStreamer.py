@@ -1,9 +1,8 @@
-# tweepy setup
 import time
 from tweepy import OAuthHandler
 import tweepy
 import json
-from src.controllers import TweetProcessor
+from controllers import TweetProcessor
 
 """
 Class used to retrieve Tweets from the twitter api. It uses the Twitter stream api.
@@ -34,11 +33,15 @@ class TweetStreamer:
     # TODO
     def start_stream(self, tweets_to_add):
         max_tweets = tweets_to_add + self.processor.db.get_count()
+        # stream_thread = TwitterStreamThread(max_tweets, self.search_word, self.api)
+        # stream_thread.start()
 
     def set_search_word(self, search_word):
+        """
+        :param search_word:
+        """
         self.search_word = search_word
 
     # TODO
     def change_collection(self, collection_name):
         self.processor.mongo_adapter.set_collection(collection_name)
-

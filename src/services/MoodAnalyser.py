@@ -2,7 +2,7 @@ import re
 import json
 
 
-class Analyser(object):
+class MoodAnalyser:
     def __init__(self):
         # initiate the moods dictionary from json
         try:

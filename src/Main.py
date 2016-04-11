@@ -1,16 +1,12 @@
-import json
+
 # print(os.environ)
 # print(os.getcwd())
-from src.views import MainPanel
-
-f = open("config/config.json")
-config = json.loads(f.read())
-f.close()
+from src.views.MainPanel import MainPanel
 
 
-class Main:
+class Main(object):
     def __init__(self):
-        self.view = MainPanel.MainPanel()
+        self.view = MainPanel()
 
 
 if __name__ == '__main__':

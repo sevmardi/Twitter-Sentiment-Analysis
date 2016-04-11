@@ -2,9 +2,10 @@ from tkinter import *
 from tkinter import messagebox
 from tkinter import simpledialog
 import socket
-from views.draw.DrawGraph import DrawGraph
-from views.draw.DrawPlot import DrawPlot
+from src.views.draw.DrawGraph import DrawGraph
+from src.views.draw.DrawPlot import DrawPlot
 from src.controllers.TweetStreamer import TweetStreamer
+
 
 class MainPanel:
     def __init__(self):

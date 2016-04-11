@@ -27,14 +27,14 @@ class TweetStreamer:
     api = tweepy.API(auth)
 
     def __init__(self, tweet_gui):
-
         self.gui = tweet_gui
 
     # TODO
     def start_stream(self, tweets_to_add):
-        max_tweets = tweets_to_add + self.processor.db.get_count()
+        # max_tweets = tweets_to_add + self.processor.db.get_count()
         # stream_thread = TwitterStreamThread(max_tweets, self.search_word, self.api)
         # stream_thread.start()
+        pass
 
     # TODO
     def set_search_word(self, search_word):

@@ -1,9 +1,8 @@
 import os, json
 import tweepy
 from src import Main
-from services import TweetStreamer as stream
-from config import config
-import Main
+from src.controllers.TweetStreamer import TweetStreamer
+from src.config import config
 
 """
 
@@ -23,6 +22,7 @@ class TweetController(object):
         """
 		Start a Twitter stream and analyse incoming tweets.
 		"""
+
         # pub_tweets = self.api.home_timeline()
         # f = open(os.path.dirname(__file__) + "../../Data/tweets.json", "w")
         # f.write(json.dumps(pub_tweets))

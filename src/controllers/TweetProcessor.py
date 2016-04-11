@@ -2,7 +2,6 @@ import os
 from src.models.Tweet import Tweet
 from src.services.MoodAnalyser import MoodAnalyser
 from src.Test_classes.MongoAdapter import MongoAdapter
-import jsonstruct
 from tweepy.streaming import StreamListener
 
 """

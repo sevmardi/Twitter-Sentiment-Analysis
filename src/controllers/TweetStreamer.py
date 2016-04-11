@@ -2,7 +2,7 @@ import time
 from tweepy import OAuthHandler
 import tweepy
 import json
-from controllers import TweetProcessor
+from src.controllers.TweetProcessor import TweetProcessor
 
 """
 Class used to retrieve Tweets from the twitter api. It uses the Twitter stream api.
@@ -13,12 +13,11 @@ class TweetStreamer:
     # default values
     search_word = 'emoji'
     streaming = False
-
     # processor to process tweets (store, moodvalue etc.)
     processor = TweetProcessor()
 
     # get a dictionary with keys for the twitter api
-    fr = open('src/config/config.json')
+    fr = open('config/config.json')
     api_data = json.loads(fr.read())
     fr.close()
 
@@ -28,6 +27,7 @@ class TweetStreamer:
     api = tweepy.API(auth)
 
     def __init__(self, tweet_gui):
+
         self.gui = tweet_gui
 
     # TODO
@@ -36,6 +36,7 @@ class TweetStreamer:
         # stream_thread = TwitterStreamThread(max_tweets, self.search_word, self.api)
         # stream_thread.start()
 
+    # TODO
     def set_search_word(self, search_word):
         """
         :param search_word:

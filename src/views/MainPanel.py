@@ -4,7 +4,7 @@ from tkinter import simpledialog
 import socket
 from views.draw.DrawGraph import DrawGraph
 from views.draw.DrawPlot import DrawPlot
-from controllers import TweetStreamer as TweetStream
+from src.controllers.TweetStreamer import TweetStreamer
 
 class MainPanel:
     def __init__(self):
@@ -13,7 +13,7 @@ class MainPanel:
         self.canvas_height = 687
         self.auto_updating = False
 
-        self.stream = TweetStream(self)
+        self.stream = TweetStreamer(self)
         self.mongo_adapter = self.stream.processor.mongo_adapter
         self.graph = DrawGraph()
         self.plot = DrawPlot(self.mongo_adapter)

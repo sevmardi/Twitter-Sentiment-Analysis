@@ -1,7 +1,7 @@
 import json
 # print(os.environ)
 # print(os.getcwd())
-from views import MainPanel
+from src.views import MainPanel
 
 f = open("config/config.json")
 config = json.loads(f.read())

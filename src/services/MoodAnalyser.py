@@ -3,10 +3,11 @@ import json
 
 
 class MoodAnalyser:
+
     def __init__(self):
         # initiate the moods dictionary from json
         try:
-            fr = open("src/data/mood_value.json", "r")
+            fr = open("data/mood_value.json", "r")
             mood_json = fr.read()
             self.mood_values = json.loads(mood_json)['moods']
             self.mood_values_tbd = json.loads(mood_json)['TBD']

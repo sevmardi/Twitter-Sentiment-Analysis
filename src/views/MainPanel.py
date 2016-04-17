@@ -1,10 +1,11 @@
 from tkinter import *
 from tkinter import messagebox
 from tkinter import simpledialog
+from tkinter.ttk import *
 import socket
 from src.views.draw.DrawGraph import DrawGraph
 from src.views.draw.DrawPlot import DrawPlot
-from src.controllers.TweetStreamer import TweetStreamer
+from src.controllers.TweetController import TweetController
 
 
 class MainPanel:
@@ -14,10 +15,10 @@ class MainPanel:
         self.canvas_height = 687
         self.auto_updating = False
 
-        self.stream = TweetStreamer(self)
-        self.mongo_adapter = self.stream.processor.mongo_adapter
-        self.graph = DrawGraph()
-        self.plot = DrawPlot(self.mongo_adapter)
+        self.stream = TweetController(self)
+       # self.mongo_adapter = self.stream.processor.mongo_adapter
+       # self.graph = DrawGraph()
+       # self.plot = DrawPlot(self.mongo_adapter)
 
         self.root = Tk()
         self.statusVar = StringVar()
@@ -25,8 +26,8 @@ class MainPanel:
 
     def create_window(self, master):
         self.add_menu(master)
-        self.add_toolbar(master)
-        self.add_status_bar(master)
+        # self.add_toolbar(master)
+        # self.add_status_bar(master)
         self.add_canvas(master)
         self.empty_window()
         master.mainloop()
@@ -62,43 +63,43 @@ class MainPanel:
         helpMenu.add_command(label="Check active settings", command=self.show_settings)
         helpMenu.add_command(label="About the graph", command=self.show_about_graph)
 
-    def add_toolbar(self, master):
-        # ******* Creating a Toolbar *******
-        toolbar = Frame(master, bg="gray")
+    # def add_toolbar(self, master):
+    #     # ******* Creating a Toolbar *******
+    #     toolbar = Frame(master, bg="gray")
+    #
+    #     # Drawing the plot buttons on the toolbar
+    #     dra_plot_but = Button(toolbar, text="Plot view", command=self.draw_plot)
+    #     dra_plot_but.pack(side=LEFT, padx=2, pady=2)
+    #     inc_plot_but = Button(toolbar, text="Zoom in", command=self.increase_plot_size)
+    #     inc_plot_but.pack(side=LEFT, padx=2, pady=2)
+    #     dec_plot_but = Button(toolbar, text="Zoom out", command=self.decrease_plot_size)
+    #     dec_plot_but.pack(side=LEFT, padx=2, pady=2)
+    #     rig_plot_but = Button(toolbar, text="<", command=self.plot.go_right)
+    #     rig_plot_but.pack(side=LEFT, padx=2, pady=2)
+    #     lef_plot_but = Button(toolbar, text=">", command=self.plot.go_left)
+    #     lef_plot_but.pack(side=LEFT, padx=2, pady=2)
+    #     upd_plot_but = Button(toolbar, text="Auto update plot", command=self.update_plot)
+    #     upd_plot_but.pack(side=LEFT, padx=2, pady=2)
+    #
+    #     # Drawing the graph buttons on the toolbar
+    #     dra_grap_but = Button(toolbar, text="Graph view", command=self.draw_graph)
+    #     dra_grap_but.pack(side=RIGHT, padx=2, pady=2)
+    #     inc_grap_but = Button(toolbar, text="Graph size +", command=self.increase_graph_size)
+    #     inc_grap_but.pack(side=RIGHT, padx=2, pady=2)
+    #     dec_grap_but = Button(toolbar, text="Graph size -", command=self.decrease_graph_size)
+    #     dec_grap_but.pack(side=RIGHT, padx=2, pady=2)
+    #     upd_grap_but = Button(toolbar, text="Auto update graph", command=self.update_graph)
+    #     upd_grap_but.pack(side=RIGHT, padx=2, pady=2)
+    #
+    #     # Add toolbar to window
+    #     toolbar.pack(side=TOP, fill=X)
 
-        # Drawing the plot buttons on the toolbar
-        dra_plot_but = Button(toolbar, text="Plot view", command=self.draw_plot)
-        dra_plot_but.pack(side=LEFT, padx=2, pady=2)
-        inc_plot_but = Button(toolbar, text="Zoom in", command=self.increase_plot_size)
-        inc_plot_but.pack(side=LEFT, padx=2, pady=2)
-        dec_plot_but = Button(toolbar, text="Zoom out", command=self.decrease_plot_size)
-        dec_plot_but.pack(side=LEFT, padx=2, pady=2)
-        rig_plot_but = Button(toolbar, text="<", command=self.plot.go_right)
-        rig_plot_but.pack(side=LEFT, padx=2, pady=2)
-        lef_plot_but = Button(toolbar, text=">", command=self.plot.go_left)
-        lef_plot_but.pack(side=LEFT, padx=2, pady=2)
-        upd_plot_but = Button(toolbar, text="Auto update plot", command=self.update_plot)
-        upd_plot_but.pack(side=LEFT, padx=2, pady=2)
-
-        # Drawing the graph buttons on the toolbar
-        dra_grap_but = Button(toolbar, text="Graph view", command=self.draw_graph)
-        dra_grap_but.pack(side=RIGHT, padx=2, pady=2)
-        inc_grap_but = Button(toolbar, text="Graph size +", command=self.increase_graph_size)
-        inc_grap_but.pack(side=RIGHT, padx=2, pady=2)
-        dec_grap_but = Button(toolbar, text="Graph size -", command=self.decrease_graph_size)
-        dec_grap_but.pack(side=RIGHT, padx=2, pady=2)
-        upd_grap_but = Button(toolbar, text="Auto update graph", command=self.update_graph)
-        upd_grap_but.pack(side=RIGHT, padx=2, pady=2)
-
-        # Add toolbar to window
-        toolbar.pack(side=TOP, fill=X)
-
-    def add_status_bar(self, master):
-        # ******* Creating a Status Bar for the Bottom *******
-        # self.statusVar.set('Welcome to Tweet Analyzer by Randy Vroegop')
-        # bd is border, relief is type of border
-        status = Label(master, textvariable=self.statusVar, bd=1, relief=SUNKEN, anchor=W)
-        status.pack(side=BOTTOM, fill=X)
+    # def add_status_bar(self, master):
+    #     # ******* Creating a Status Bar for the Bottom *******
+    #     # self.statusVar.set('Welcome to Tweet Analyzer by Randy Vroegop')
+    #     # bd is border, relief is type of border
+    #     status = Label(master, textvariable=self.statusVar, bd=1, relief=SUNKEN, anchor=W)
+    #     status.pack(side=BOTTOM, fill=X)
 
     def add_canvas(self, master):
         # ******* Creating a Canvas *******

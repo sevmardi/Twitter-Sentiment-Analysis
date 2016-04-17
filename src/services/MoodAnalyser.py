@@ -16,13 +16,14 @@ class MoodAnalyser:
             print('Mood/value file not found.', e)
 
     def analyse(self, tweet):
-        tweet.mood = self.get_mood(tweet.text)
+        processed_text = self.process_text(tweet.getTweet())
+
         return tweet
 
-    def get_mood(self, tweet_text):
+    def process_text(self, tweet_text):
         # clean up the string, make it a dictionary
-        processed_text = self.process_text(tweet_text.getTweet())
-        tweet_dict = str(processed_text).split(' ')
+        clear_tweet_text = self._clear_text(tweet_text.getTweet())
+        tweet_dict = str(clear_tweet_text).split(' ')
 
         # we are going to calculate mood
         mood = 0
@@ -44,27 +45,7 @@ class MoodAnalyser:
         else:
             return 0
 
-    def process_text(self, text):
-        """
-		Processes text from the Tweet. Sets it to lower case. Rewrites links. Rewrites mentions to other users. Removes
-		white space. Removes hashtags.
-		"""
-        text = text.lower()
-        # Remove links
-        text = re.sub('((www\.[^\s]+)|(https?://[^\s]+)|(http://[^\s]+))', 'URL', text)
-
-        # Remove mentions
-        text = re.sub('@[^\s]+', 'MENTION', text)
-
-        # Remove white spaces
-        text = re.sub('[\s]+', ' ', text)
-        # Remove hashtag from words
-        text = re.sub(r'#([^\s]+)', r'\1', text)
-
-        # trim
-        text = text.strip('\'"')
-        # clear some exta characters that we dont want
-        # this way counting words is more accurate
+    def _clear_text(self, text):
         text = re.sub(r'[^a-zA-Z0-9 ]', ' ', text)
         return text
 

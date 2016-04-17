@@ -39,6 +39,6 @@ class TweetController(object):
     #     print(keywords)
 
 
-if __name__ == '__main__':
-    l = TweetController(1)
-    l.start_stream('nice')
+# if __name__ == '__main__':
+#     l = TweetController(1)
+#     l.start_stream('nice')

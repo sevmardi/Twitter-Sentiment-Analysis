@@ -3,7 +3,6 @@ import json
 
 
 class MoodAnalyser:
-
     def __init__(self):
         # initiate the moods dictionary from json
         try:
@@ -14,15 +13,15 @@ class MoodAnalyser:
             fr.close()
         except BaseException as e:
             print('Mood/value file not found.', e)
-
+    #TODO
     def analyse(self, tweet):
-        tweet.mood = self.get_mood(tweet.get_tweet())
+        tweet.mood = self.get_mood(tweet.text)
 
         return tweet
 
     def get_mood(self, tweet_text):
         # clean up the string, make it a dictionary
-        clear_tweet_text = self._clear_text(tweet_text)
+        clear_tweet_text = self._process_text(tweet_text)
         tweet_dict = str(clear_tweet_text).split(' ')
 
         # we are going to calculate mood
@@ -45,22 +44,19 @@ class MoodAnalyser:
         else:
             return 0
 
-    def _clear_text(self, text):
+    #TODO
+    def _process_text(self, text):
+        text = text.lower()
         text = re.sub(r'[^a-zA-Z0-9 ]', ' ', text)
+        # Remove links
+        text = re.sub('((www\.[^\s]+)|(https?://[^\s]+)|(http://[^\s]+))', 'URL', text)
+        # Remove mentions
+        text = re.sub('@[^\s]+','MENTION',text)
+        # Remove white spaces
+        text = re.sub('[\s]+', ' ', text)
+        # Remove hashtag from words
+        text = re.sub(r'#([^\s]+)', r'\1', text)
+        #trim
+        text = text.split('\'"')
         return text
 
-        # def word_in_text(word, text):
-        #     word = word.lower()
-        #     text = text.lower()
-        #     match = re.search(word, text)
-        #     if match:
-        #         return True
-        #     else:
-        #         return False
-
-        # def extract_link(text):
-        #     regex = r'https?://[^\s<>"]+|www\.[^\s<>"]+'
-        #     match = re.search(regex, text)
-        #     if match:
-        #         return match.group()
-        #     return ''

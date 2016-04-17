@@ -22,11 +22,13 @@ class StdOutListener(StreamListener):
         super().__init__()
 
         self.save_file = tweets
+        print("Listener created")
 
     def on_data(self, raw_data):
         self.save_file.append(json.loads(raw_data))
         print(raw_data)
         save_file.write(str(raw_data))
+        print("Tweet received")
         return True
 
     def on_error(self, status_code):

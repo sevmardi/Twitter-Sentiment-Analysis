@@ -1,7 +1,7 @@
-# print(os.environ)
-# print(os.getcwd())
+import os
+#print(os.environ)
+#print(os.getcwd())
 from src.views.MainPanel import MainPanel
-
 
 
 class Main(object):

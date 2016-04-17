@@ -15,7 +15,7 @@ class MainPanel:
         self.canvas_height = 687
         self.auto_updating = False
 
-        self.stream = TweetController(self)
+        self.tweetcontroller = TweetController(self)
        # self.mongo_adapter = self.stream.processor.mongo_adapter
        # self.graph = DrawGraph()
        # self.plot = DrawPlot(self.mongo_adapter)
@@ -135,7 +135,7 @@ class MainPanel:
             self.set_footer_text('Starting stream to add ' + str(self.tweets_to_add) + " tweets.")
             self.root.update()
             # start endless loop, application is not responding untill it ends.
-            self.stream.start_stream(self.tweets_to_add)
+            self.tweetcontroller.start_stream(self.tweets_to_add)
         else:
             self.set_footer_text('Failed to connect to the internet. Please check your connection.')
 
@@ -146,7 +146,7 @@ class MainPanel:
         user_val = simpledialog.askstring('Keyword', 'Set the keyword to filter tweets')
         try:
             self.set_footer_text("Now looking for the word: " + user_val)
-            self.stream.search_word = user_val
+            self.tweetcontroller.set_keyword = user_val
         except TypeError:
             print('Could not set keyword, probably empty string is given')
         except:
@@ -156,7 +156,7 @@ class MainPanel:
         user_val = simpledialog.askstring('Collection', 'Set the collection to store tweets')
         try:
             self.set_footer_text("Storing tweets in collection: " + user_val)
-            self.stream.change_collection(str(user_val))
+            self.tweetcontroller.change_collection(str(user_val))
         except TypeError:
             print('Could not set collection, probably empty string is given')
         except:
@@ -180,7 +180,7 @@ class MainPanel:
         info = 'Current collection: ' + \
                str(self.mongo_adapter.collection.name) + \
                '\nCurrent search-word: ' + \
-               self.stream.search_word
+               self.tweetcontroller.default_keyword
 
         messagebox.showinfo('Current settings', info)
 

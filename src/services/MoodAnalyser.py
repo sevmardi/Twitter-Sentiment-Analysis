@@ -16,13 +16,13 @@ class MoodAnalyser:
             print('Mood/value file not found.', e)
 
     def analyse(self, tweet):
-        processed_text = self.process_text(tweet.getTweet())
+        tweet.mood = self.get_mood(tweet.get_tweet())
 
         return tweet
 
-    def process_text(self, tweet_text):
+    def get_mood(self, tweet_text):
         # clean up the string, make it a dictionary
-        clear_tweet_text = self._clear_text(tweet_text.getTweet())
+        clear_tweet_text = self._clear_text(tweet_text)
         tweet_dict = str(clear_tweet_text).split(' ')
 
         # we are going to calculate mood

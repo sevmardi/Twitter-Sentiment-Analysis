@@ -17,7 +17,7 @@ class TweetController(object):
         self.auth = OAuthHandler(Listener.api_data["consumer_key"], Listener.api_data["consumer_secret"])
         self.auth.set_access_token(Listener.api_data["access_token"], Listener.api_data["access_token_secret"])
         self.api = tweepy.API(self.auth, parser=tweepy.parsers.JSONParser())
-        #self.server = server
+        # self.server = server
         self.tweet_gui = tweet_gui
 
     def start_stream(self, tweets_to_add):
@@ -39,6 +39,6 @@ class TweetController(object):
     #     print(keywords)
 
 
-# if __name__ == '__main__':
-#     l = TweetController(1)
-#     l.start_stream('nice')
+if __name__ == '__main__':
+    l = TweetController(1)
+    l.start_stream('nice')

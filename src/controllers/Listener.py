@@ -15,22 +15,23 @@ Class used to retrieve Tweets from the twitter api. It uses the Twitter stream a
 
 #tweets = []
 # file name that you want to open is the second argument
-#save_file = open('data/tweets.json', 'a')
+save_file = open('../data/tweets.json', 'a')
 
 
 class Listener(StreamListener):
     # get a dictionary with keys for the twitter api
-    fr = open('config/config.json')
+    fr = open('../config/config.json')
     api_data = json.loads(fr.read())
     fr.close()
 
-    def __init__(self, save_location="../data/tweets.json"):
+    def __init__(self):
         super().__init__()
-        self.save_location = save_location
+        # self.save_location = os.path.abspath("../../data/tweets.json")
+        #self.save_location = save_location
         self.count = 0
         self.tweets = []
-        self.analyser = MoodAnalyser()
-        #self.save_file = tweets
+        #self.analyser = MoodAnalyser()
+        self.save_file = self.tweets
         print("Listener created")
 
     def on_status(self, status):
@@ -42,25 +43,23 @@ class Listener(StreamListener):
         print("Tweet starts receiving")
         # self.output.write(status + "\n")
         tweet = self.create_tweet(status)
-        self.analyser.analyse(tweet)
+        #self.analyser.analyse(tweet)
         self.count += 1
         self.save_tweets()
-        # self.on_data(status)
+        print(status)
         return
 
-        # def on_data(self, raw_data):
-        #     print("Saving tweets to tweets.json")
-        #     self.save_file.append(json.loads(raw_data))
-        #     save_file.write(str(raw_data))
-        #     return True
-
-        # f = open(os.path.dirname(__file__) + self.save_file, "w")
-        # f.write(jsonstruct.encode(self.save_file))
-        # f.close()
+    # def on_data(self, raw_data):
+    #     print("Saving tweets to tweets.json")
+    #     self.save_file.append(json.loads(raw_data))
+    #     save_file.write(str(raw_data))
+    #     return True
 
     def save_tweets(self):
         print("Saving tweets to tweets.json")
-        f = open(os.path.dirname(__file__) + self.save_location, "w")
+        f = open(os.path.dirname(__file__) + self.save_file, "w")
+        #self.save_file.append(json.loads(self.tweets))
+        #save_file.write(jsonstruct.encode(self.tweets))
         f.write(jsonstruct.encode(self.tweets))
         f.close()
 

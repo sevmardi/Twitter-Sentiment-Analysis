@@ -13,7 +13,8 @@ class MoodAnalyser:
             fr.close()
         except BaseException as e:
             print('Mood/value file not found.', e)
-    #TODO
+
+    # TODO
     def analyse(self, tweet):
         tweet.mood = self.get_mood(tweet.text)
 
@@ -44,19 +45,18 @@ class MoodAnalyser:
         else:
             return 0
 
-    #TODO
+    # TODO
     def _process_text(self, text):
         text = text.lower()
         text = re.sub(r'[^a-zA-Z0-9 ]', ' ', text)
         # Remove links
         text = re.sub('((www\.[^\s]+)|(https?://[^\s]+)|(http://[^\s]+))', 'URL', text)
         # Remove mentions
-        text = re.sub('@[^\s]+','MENTION',text)
+        text = re.sub('@[^\s]+', 'MENTION', text)
         # Remove white spaces
         text = re.sub('[\s]+', ' ', text)
         # Remove hashtag from words
         text = re.sub(r'#([^\s]+)', r'\1', text)
-        #trim
+        # trim
         text = text.split('\'"')
         return text
-

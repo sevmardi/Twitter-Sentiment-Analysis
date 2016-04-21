@@ -1,9 +1,11 @@
 import os
+import sqlite3
 import tweepy
-from tweepy import Stream
-from src.controllers.TweetProcessor import TweetProcessor
-from src.controllers.Listener import Listener
 from tweepy import OAuthHandler
+from tweepy import Stream
+
+from src.Listener import Listener
+from src.controllers.TweetProcessor import TweetProcessor
 
 
 class TweetController(object):
@@ -18,6 +20,8 @@ class TweetController(object):
         self.auth.set_access_token(Listener.api_data["access_token"], Listener.api_data["access_token_secret"])
         self.api = tweepy.API(self.auth, parser=tweepy.parsers.JSONParser())
         # self.server = server
+       # self.conn = sqlite3.connect(os.path.dirname(__file__) + "../DB/iscp.db", check_same_thread=False)
+        self.conn = sqlite3.connect('../DB/iscp.db', check_same_thread=False)
         self.tweet_gui = tweet_gui
 
     def start_stream(self, tweets_to_add):
@@ -41,4 +45,4 @@ class TweetController(object):
 
 if __name__ == '__main__':
     l = TweetController(1)
-    l.start_stream('nice')
+

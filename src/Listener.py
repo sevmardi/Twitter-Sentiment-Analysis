@@ -13,10 +13,11 @@ from tweepy.streaming import StreamListener
 Class used to retrieve Tweets from the twitter api. It uses the Twitter stream api.
 """
 
-#tweets = []
+
+# tweets = []
 # file name that you want to open is the second argument
 save_file = open('../data/tweets.json', 'a')
-
+MAX_TWEETS = 10000
 
 class Listener(StreamListener):
     # get a dictionary with keys for the twitter api
@@ -24,13 +25,12 @@ class Listener(StreamListener):
     api_data = json.loads(fr.read())
     fr.close()
 
-    def __init__(self):
+    def __init__(self, save_location='/data/tweets.json'):
         super().__init__()
-        # self.save_location = os.path.abspath("../../data/tweets.json")
         #self.save_location = save_location
         self.count = 0
         self.tweets = []
-        #self.analyser = MoodAnalyser()
+        # self.analyser = MoodAnalyser()
         self.save_file = self.tweets
         print("Listener created")
 
@@ -41,27 +41,25 @@ class Listener(StreamListener):
         :param status:
         """
         print("Tweet starts receiving")
-        # self.output.write(status + "\n")
-        tweet = self.create_tweet(status)
-        #self.analyser.analyse(tweet)
         self.count += 1
+        # tweet = self.create_tweet(status)
+        # self.analyser.analyse(tweet)
+        # self.tweets.append(tweet)
         self.save_tweets()
-        print(status)
+
         return
 
-    # def on_data(self, raw_data):
-    #     print("Saving tweets to tweets.json")
-    #     self.save_file.append(json.loads(raw_data))
-    #     save_file.write(str(raw_data))
-    #     return True
-
-    def save_tweets(self):
+    def on_data(self, raw_data):
         print("Saving tweets to tweets.json")
-        f = open(os.path.dirname(__file__) + self.save_file, "w")
-        #self.save_file.append(json.loads(self.tweets))
-        #save_file.write(jsonstruct.encode(self.tweets))
-        f.write(jsonstruct.encode(self.tweets))
-        f.close()
+        #save_file.append(json.loads(raw_data))
+        save_file.write(str(raw_data))
+        return True
+
+    # def save_tweets(self):
+    #     print("Saving tweets to tweets.json")
+    #     f = open(os.path.dirname(__file__) + self.save_location, "w")
+    #     f.write(jsonstruct.encode(self.tweets))
+    #     f.close()
 
     def on_error(self, status_code):
         sys.stderr.write('Error:' + str(status_code) + '\n')

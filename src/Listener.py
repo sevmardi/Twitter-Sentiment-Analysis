@@ -3,6 +3,7 @@ import os
 import sys
 import time
 import json
+import sqlite3
 import jsonstruct
 from src.controllers.TweetProcessor import TweetProcessor
 from src.services.MoodAnalyser import MoodAnalyser
@@ -13,11 +14,11 @@ from tweepy.streaming import StreamListener
 Class used to retrieve Tweets from the twitter api. It uses the Twitter stream api.
 """
 
-
 # tweets = []
 # file name that you want to open is the second argument
 save_file = open('../data/tweets.json', 'a')
 MAX_TWEETS = 10000
+
 
 class Listener(StreamListener):
     # get a dictionary with keys for the twitter api
@@ -27,19 +28,17 @@ class Listener(StreamListener):
 
     def __init__(self, save_location='/data/tweets.json'):
         super().__init__()
-        #self.save_location = save_location
+        # self.save_location = save_location
         self.count = 0
         self.tweets = []
         # self.analyser = MoodAnalyser()
         self.save_file = self.tweets
+        self.conn = sqlite3.connect('../DB/iscp.db', check_same_thread=False)
+
         print("Listener created")
 
     def on_status(self, status):
-        """
-        Called when a tweet is recieved. It creates a Tweet object and passes it to the Analyser. It saves the tweet
-		in memory and writes the recieved tweet count to the database.
-        :param status:
-        """
+
         print("Tweet starts receiving")
         self.count += 1
         # tweet = self.create_tweet(status)
@@ -51,7 +50,7 @@ class Listener(StreamListener):
 
     def on_data(self, raw_data):
         print("Saving tweets to tweets.json")
-        #save_file.append(json.loads(raw_data))
+        # save_file.append(json.loads(raw_data))
         save_file.write(str(raw_data))
         return True
 

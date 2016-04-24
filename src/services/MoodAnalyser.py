@@ -14,9 +14,8 @@ class MoodAnalyser:
         except BaseException as e:
             print('Mood/value file not found.', e)
 
-    # TODO
     def analyse(self, tweet):
-        tweet.mood = self.get_mood(tweet.text)
+        tweet.mood = self.get_mood(tweet.get_tweet())
 
         return tweet
 
@@ -51,6 +50,7 @@ class MoodAnalyser:
         text = re.sub(r'[^a-zA-Z0-9 ]', ' ', text)
         # Remove links
         text = re.sub('((www\.[^\s]+)|(https?://[^\s]+)|(http://[^\s]+))', 'URL', text)
+
         # Remove mentions
         text = re.sub('@[^\s]+', 'MENTION', text)
         # Remove white spaces

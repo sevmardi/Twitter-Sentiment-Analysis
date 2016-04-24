@@ -36,14 +36,20 @@ class Listener(StreamListener):
         print("Listener created")
 
     def on_status(self, status):
-        print("Tweet starts receiving")
-        self.count += 1
-        tweet = self.create_tweet(status)
-        self.analyser.analyse(tweet)
-        self.tweets.append(tweet)
+        """
+		Called when a tweet is recieved. It creates a Tweet object and passes it to the Analyser. It saves the tweet
+		in memory and writes the recieved tweet count to the database.
+		"""
+        if self.get_status() == "active":
+            self.count += 1
+            tweet = self.create_tweet(status)
+            self.analyser.analyse(tweet)
+            self.tweets.append(tweet)
+            self.save_count()
+            return True
+        # print("Tweet starts receiving")
         self.save_tweets()
-
-        return
+        return False
 
     # def on_data(self, raw_data):
     #     print("Saving tweets to tweets.json")
@@ -58,6 +64,9 @@ class Listener(StreamListener):
         f.close()
 
     def on_error(self, status_code):
+        """
+		Called when a error is recieved from the Twitter api.
+		"""
         sys.stderr.write('Error:' + str(status_code) + '\n')
         return False
 
@@ -71,9 +80,32 @@ class Listener(StreamListener):
         return
 
     def on_disconnect(self, notice):
+        """
+		Creates a tweet from the given json object from the twitter api.
+		"""
         print("Disconnected")
         self.save_tweets()
         return
 
     def create_tweet(self, status):
+        """
+		Creates a tweet from the given json object from the twitter api.
+		"""
         return Tweet(status.text.encode("utf8"), str(status.created_at), status.user.screen_name)
+
+    def get_status(self):
+        """
+		Returns the status of the stream (active or inactive).
+		"""
+        cursor = self.conn.cursor()
+        cursor.execute("SELECT status FROM stream_status WHERE id = 1")
+        result = cursor.fetchall()
+        return str(result[0][0])
+
+    def save_count(self):
+        """
+		Save current count to the database.
+		"""
+        cursor = self.conn.cursor()
+        cursor.execute("UPDATE stream_status SET tweets_retrieved=? WHERE id = 1", (self.count,))
+        self.conn.commit()

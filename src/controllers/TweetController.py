@@ -1,12 +1,15 @@
 import os
 import sqlite3
+
 import tweepy
 from tweepy import OAuthHandler
 from tweepy import Stream
+
 from src.Listener import Listener
 from src.controllers.TweetProcessor import TweetProcessor
 
 default_keyword = "climate change"
+max_tweets = 10000
 
 
 class TweetController(object):
@@ -21,17 +24,16 @@ class TweetController(object):
         # self.server = server
         # self.conn = sqlite3.connect(os.path.dirname(__file__) + "../DB/iscp.db", check_same_thread=False)
         self.tweet_gui = tweet_gui
-        self.conn = sqlite3.connect('../DB/iscp.db', check_same_thread=False)
+        self.conn = sqlite3.connect('DB/iscp.db', check_same_thread=False)
 
     def start_stream(self, tweets_to_add):
-        # max_tweet = tweets_to_add + self.processor.db.get_count()
+        # max_tweets = tweets_to_add + self.processor.db.get_count()
         self.tweet_listener = Listener()
         self.stream = Stream(auth=self.auth, listener=self.tweet_listener)
         self.stream.filter(track=[default_keyword], async=True)
-        # self.stream.filter(track=keywords, async=True)
 
     def list_of_tweets(self):
-        f = open(os.path.dirname(__file__) + "../data/tweets.json")
+        f = open(os.path.dirname(__file__) + "data/tweets.json")
         return f.read()
 
     def stop_streaming_tweets(self):

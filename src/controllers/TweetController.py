@@ -3,14 +3,14 @@ import sqlite3
 import tweepy
 from tweepy import OAuthHandler
 from tweepy import Stream
-
 from src.Listener import Listener
 from src.controllers.TweetProcessor import TweetProcessor
+
+default_keyword = "climate change"
 
 
 class TweetController(object):
     """docstring for Controller"""
-    default_keyword = "climate change"
 
     processor = TweetProcessor()
 
@@ -27,7 +27,7 @@ class TweetController(object):
         # max_tweet = tweets_to_add + self.processor.db.get_count()
         self.tweet_listener = Listener()
         self.stream = Stream(auth=self.auth, listener=self.tweet_listener)
-        self.stream.filter(track=['climate change', 'earth', 'NASA'], async=True)
+        self.stream.filter(track=[default_keyword], async=True)
         # self.stream.filter(track=keywords, async=True)
 
     def list_of_tweets(self):
@@ -44,3 +44,4 @@ class TweetController(object):
 
 if __name__ == '__main__':
     l = TweetController(1)
+    l.start_stream(2)

@@ -15,7 +15,7 @@ class MongoAdapter:
 
     def start(self):
         try:
-            fr = open("src/Test_Classes/DbSettings.json", "r")
+            fr = open("Test_classes/DbSettings.json", "r")
             settings = fr.read()
             fr.close()
 

@@ -4,6 +4,7 @@ import os
 from src.views.MainPanel import MainPanel
 
 
+
 class Main(object):
     def __init__(self):
         self.view = MainPanel()

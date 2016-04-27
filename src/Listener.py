@@ -9,6 +9,7 @@ from src.controllers.TweetProcessor import TweetProcessor
 from src.services.MoodAnalyser import MoodAnalyser
 from src.models.Tweet import Tweet
 from tweepy.streaming import StreamListener
+from src.DB.DataBase import DataBase
 
 """
 Class used to retrieve Tweets from the twitter api. It uses the Twitter stream api.
@@ -25,14 +26,15 @@ class Listener(StreamListener):
     api_data = json.loads(fr.read())
     fr.close()
 
-    def __init__(self, save_location='\\data\\tweets.json'):
+    def __init__(self, save_location='/data/tweets.json'):
         super().__init__()
         self.save_location = save_location
         self.count = 0
         self.tweets = []
         self.analyser = MoodAnalyser()
         # self.save_file = self.tweets
-        self.conn = sqlite3.connect('DB/iscp.db', check_same_thread=False)
+        self.db = DataBase()
+        self.max_tweets = 10000
         print("Listener created")
 
     def on_status(self, status):
@@ -40,28 +42,37 @@ class Listener(StreamListener):
 		Called when a tweet is recieved. It creates a Tweet object and passes it to the Analyser. It saves the tweet
 		in memory and writes the recieved tweet count to the database.
 		"""
-        if self.get_status() == "active":
+        if self.db.get_status() == "active":
             self.count += 1
             tweet = self.create_tweet(status)
             self.analyser.analyse(tweet)
             self.tweets.append(tweet)
-            self.save_count()
+            self.db.save_count()
             return True
         # print("Tweet starts receiving")
-        self.save_tweets()
+        # self.save_tweets()
         return False
 
-    # def on_data(self, raw_data):
-    #     print("Saving tweets to tweets.json")
-    #     # save_file.append(json.loads(raw_data))
-    #     save_file.write(str(raw_data))
-    #     return True
+    def on_data(self, raw_data):
+        try:
 
-    def save_tweets(self):
-        print("Saving tweets to tweets.json")
-        f = open(os.path.dirname(__file__) + self.save_location, "w")
-        f.write(jsonstruct.encode(self.tweets))
-        f.close()
+            if tweets_to_add + self.db.fetch_number_of_tweets() != self.max_tweets:
+                save_file.write(str(raw_data))
+            # TODO
+            else:
+                print("Too Many tweets")
+
+        except BaseException as e:
+            print(e)
+
+            return False
+
+
+    # def save_tweets(self):
+    #     print("Saving tweets to tweets.json")
+    #     f = open(os.path.dirname(__file__) + self.save_location, "w")
+    #     f.write(jsonstruct.encode(self.tweets))
+    #     f.close()
 
     def on_error(self, status_code):
         """
@@ -93,19 +104,7 @@ class Listener(StreamListener):
 		"""
         return Tweet(status.text.encode("utf8"), str(status.created_at), status.user.screen_name)
 
-    def get_status(self):
-        """
-		Returns the status of the stream (active or inactive).
-		"""
-        cursor = self.conn.cursor()
-        cursor.execute("SELECT status FROM stream_status WHERE id = 1")
-        result = cursor.fetchall()
-        return str(result[0][0])
 
-    def save_count(self):
-        """
-		Save current count to the database.
-		"""
-        cursor = self.conn.cursor()
-        cursor.execute("UPDATE stream_status SET tweets_retrieved=? WHERE id = 1", (self.count,))
-        self.conn.commit()
+
+
+

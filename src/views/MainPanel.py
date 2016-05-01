@@ -68,8 +68,8 @@ class MainPanel:
     def add_navigation(self):
         # test = tkinter.Button(self, text="nice", font=LARGE_FONT)
         # test.pack()
-        self.button = Button(self)
-        self.button.pack()
+
+        pass
 
     def empty_window(self):
         self.canvas.delete("all")

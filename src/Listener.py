@@ -17,12 +17,12 @@ Class used to retrieve Tweets from the twitter api. It uses the Twitter stream a
 
 # tweets = []
 # file name that you want to open is the second argument
-save_file = open('data/tweets.json', 'a')
+#save_file = open('../data/tweets.json', 'a')
 
 
 class Listener(StreamListener):
     # get a dictionary with keys for the twitter api
-    fr = open('config/config.json')
+    fr = open('../config/config.json')
     api_data = json.loads(fr.read())
     fr.close()
 
@@ -31,10 +31,11 @@ class Listener(StreamListener):
         self.save_location = save_location
         self.count = 0
         self.tweets = []
+        self.conn = sqlite3.connect('../DB/iscp.db', check_same_thread=False)
         self.analyser = MoodAnalyser()
-        # self.save_file = self.tweets
+        #self.save_file = self.tweets
         self.db = DataBase()
-        self.max_tweets = 10000
+        self.max_tweets = 10
         print("Listener created")
 
     def on_status(self, status):
@@ -42,40 +43,34 @@ class Listener(StreamListener):
 		Called when a tweet is recieved. It creates a Tweet object and passes it to the Analyser. It saves the tweet
 		in memory and writes the recieved tweet count to the database.
 		"""
+        print("Tweet recieved")
         if self.db.get_status() == "active":
             self.count += 1
             tweet = self.create_tweet(status)
             self.analyser.analyse(tweet)
             self.tweets.append(tweet)
-            self.db.save_count()
+            self.db.save_count(self.count)
             return True
-        # print("Tweet starts receiving")
-        # self.save_tweets()
+        self.save_tweets()
         return False
 
-    def on_data(self, raw_data):
-        try:
-            if raw_data + self.db.fetch_number_of_tweets() != self.max_tweets:
-                save_file.write(str(raw_data))
-            # TODO
-            else:
-                print("Too Many tweets")
+    # def on_data(self, raw_data):
+    #     print('tweets receiving..')
+    #     data = json.loads(raw_data)
+    #     save_file.write(str(data))
+    #     self.data_to_fill()
 
-        except BaseException as e:
-            print(e)
-
-            return False
-
-    # def save_tweets(self):
-    #     print("Saving tweets to tweets.json")
-    #     f = open(os.path.dirname(__file__) + self.save_location, "w")
-    #     f.write(jsonstruct.encode(self.tweets))
-    #     f.close()
+    def save_tweets(self):
+        print("Saving tweets to tweets.json")
+        f = open(os.path.dirname(__file__) + self.save_location, "w")
+        f.write(jsonstruct.encode(self.tweets))
+        f.close()
 
     def on_error(self, status_code):
         """
 		Called when a error is recieved from the Twitter api.
 		"""
+
         sys.stderr.write('Error:' + str(status_code) + '\n')
         return False
 

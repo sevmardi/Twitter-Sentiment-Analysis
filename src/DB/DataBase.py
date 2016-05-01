@@ -16,13 +16,13 @@ class DataBase(object):
 
     def get_timeChart(self):
         cursor = self.conn.cursor()
-        data = (self.cur.fetchall())
+        data = (cursor.fetchall())
         return data
 
     def fetch_number_of_tweets(self):
         self.cur.execute("SELECT COUNT(tweets_retrieved) FROM tweets")
-        numberOfTweets = self.cur.fetchone()[0]
-        return numberOfTweets
+        number_of_tweets = self.cur.fetchone()[0]
+        return number_of_tweets
 
     def fetch_all_tweets(self):
         sqlCall = self.cur.execute("SELECT tweets_retrieved FROM tweets")
@@ -45,3 +45,18 @@ class DataBase(object):
         cursor.execute("SELECT status FROM tweets WHERE id = 1")
         result = cursor.fetchall()
         return str(result[0][0])
+
+    def set_status(self, status):
+        cursor = self.conn.cursor()
+        cursor.execute("UPDATE tweets SET status=? WHERE id = 1", (status,))
+        self.conn.commit()
+
+    def reset_status(self):
+        """
+        Reset the current status.
+        """
+        cursor = self.conn.cursor()
+        cursor.execute(
+            "UPDATE tweets SET tweets_retrieved=?, avg_mood=?, pos_tweets=?, neg_tweets=?, neu_tweets=? WHERE id = 1",
+            (0, 'neu', 0, 0, 0,))
+        self.conn.commit()

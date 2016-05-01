@@ -5,7 +5,6 @@ import time
 import json
 import sqlite3
 import jsonstruct
-from src.controllers.TweetProcessor import TweetProcessor
 from src.services.MoodAnalyser import MoodAnalyser
 from src.models.Tweet import Tweet
 from tweepy.streaming import StreamListener
@@ -15,9 +14,10 @@ from src.DB.DataBase import DataBase
 Class used to retrieve Tweets from the twitter api. It uses the Twitter stream api.
 """
 
+
 # tweets = []
 # file name that you want to open is the second argument
-#save_file = open('../data/tweets.json', 'a')
+# save_file = open('../data/tweets.json', 'a')
 
 
 class Listener(StreamListener):
@@ -33,9 +33,9 @@ class Listener(StreamListener):
         self.tweets = []
         self.conn = sqlite3.connect('../DB/iscp.db', check_same_thread=False)
         # self.analyser = MoodAnalyser()
-        #self.save_file = self.tweets
+        # self.save_file = self.tweets
         self.db = DataBase()
-        self.max_tweets = 10
+        self.max_tweets = 10000
         print("Listener created")
 
     def on_status(self, status):
@@ -47,7 +47,7 @@ class Listener(StreamListener):
         if self.db.get_status() == "active":
             self.count += 1
             tweet = self.create_tweet(status)
-            #self.analyser.analyse(tweet)
+            # self.analyser.analyse(tweet)
             self.tweets.append(tweet)
             self.save_avg_mood()
             self.db.save_count(self.count)
@@ -106,11 +106,11 @@ class Listener(StreamListener):
 
         for tweet in self.tweets:
             if tweet.get_sentiment() == 'pos':
-                pos_tweets = pos_tweets + 1
+                pos_tweets += 1
             elif tweet.get_sentiment() == 'neg':
-                neg_tweets = neg_tweets + 1
+                neg_tweets += 1
             else:
-                neu_tweets = neu_tweets + 1
+                neu_tweets += 1
 
             if pos_tweets > neg_tweets and pos_tweets > neu_tweets:
                 mood = 'pos'

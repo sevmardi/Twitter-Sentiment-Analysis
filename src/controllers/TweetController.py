@@ -6,13 +6,10 @@ from tweepy import OAuthHandler
 from tweepy import Stream
 import tkinter
 from src.Listener import Listener
-from src.controllers.TweetProcessor import TweetProcessor
 
 
 class TweetController():
     """docstring for Controller"""
-
-    processor = TweetProcessor()
 
     def __init__(self):
         self.auth = OAuthHandler(Listener.api_data["consumer_key"], Listener.api_data["consumer_secret"])
@@ -39,8 +36,8 @@ class TweetController():
     #         return False
 
     def start_stream(self):
-        self.reset_status()
-        self.set_status("active")
+        self.db.reset_status()
+        self.db.set_status("active")
         self.tweet_listener = Listener()
         self.stream = Stream(auth=self.auth, listener=self.tweet_listener)
         self.stream.filter(track=[self.default_keyword], async=True)
@@ -54,31 +51,6 @@ class TweetController():
 
     def create_table_if_not_exist(self):
         self.db.create_table_if_not_exist()
-
-    def set_status(self, status):
-        cursor = self.db.conn.cursor()
-        cursor.execute("UPDATE tweets SET status=? WHERE id = 1", (status,))
-        self.db.conn.commit()
-
-    def get_status(self):
-        """
-        Retrieve the current status from the database (id, status, tweets_analyzed, avg_mood, pos_tweets, neg_tweets,
-        neu_tweets).
-        """
-        cursor = self.db.conn.cursor()
-        cursor.execute("SELECT * FROM tweets WHERE id = 1")
-        result = cursor.fetchall()
-        return result[0]
-
-    def reset_status(self):
-        """
-        Reset the current status.
-        """
-        cursor = self.db.conn.cursor()
-        cursor.execute(
-            "UPDATE tweets SET tweets_retrieved=?, avg_mood=?, pos_tweets=?, neg_tweets=?, neu_tweets=? WHERE id = 1",
-            (0, 'neu', 0, 0, 0,))
-        self.db.conn.commit()
 
 
 if __name__ == '__main__':

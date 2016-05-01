@@ -55,8 +55,7 @@ class Listener(StreamListener):
 
     def on_data(self, raw_data):
         try:
-
-            if tweets_to_add + self.db.fetch_number_of_tweets() != self.max_tweets:
+            if raw_data + self.db.fetch_number_of_tweets() != self.max_tweets:
                 save_file.write(str(raw_data))
             # TODO
             else:
@@ -66,7 +65,6 @@ class Listener(StreamListener):
             print(e)
 
             return False
-
 
     # def save_tweets(self):
     #     print("Saving tweets to tweets.json")
@@ -103,8 +101,3 @@ class Listener(StreamListener):
 		Creates a tweet from the given json object from the twitter api.
 		"""
         return Tweet(status.text.encode("utf8"), str(status.created_at), status.user.screen_name)
-
-
-
-
-

@@ -60,3 +60,8 @@ class DataBase(object):
             "UPDATE tweets SET tweets_retrieved=?, avg_mood=?, pos_tweets=?, neg_tweets=?, neu_tweets=? WHERE id = 1",
             (0, 'neu', 0, 0, 0,))
         self.conn.commit()
+
+    def purge(self):
+        self.conn.execute(" DELETE from tweets  where datetime(created_at) < date('now','-8 day') ")
+        self.conn.commit()
+        return True

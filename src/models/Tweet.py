@@ -13,7 +13,6 @@ class Tweet(object):
         self.user = user
         self.sentiment = ''
 
-
     def get_tweet(self):
         """
 		Return the tweet

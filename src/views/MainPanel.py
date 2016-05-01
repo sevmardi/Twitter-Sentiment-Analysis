@@ -3,8 +3,7 @@ import tkinter as tkinter
 from tkinter import messagebox
 from tkinter import simpledialog
 import socket
-from src.views.draw.DrawGraph import DrawGraph
-from src.views.draw.DrawPlot import DrawPlot
+
 from src.controllers.TweetController import TweetController
 
 LARGE_FONT = ("Verdana", 12)
@@ -14,7 +13,7 @@ class MainPanel:
         self.canvas_width = 850
         self.canvas_height = 450
         self.auto_updating = False
-        self.tweetcontroller = TweetController(self)
+        self.tweetcontroller = TweetController()
         self.tk = Tk()
         self.statusVar = StringVar()
         self.create_window(self.tk)

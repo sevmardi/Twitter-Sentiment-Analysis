@@ -9,9 +9,7 @@ class MoodAnalyser:
 
     def analyse(self, tweet):
         processed_text = self.process_text(tweet.get_tweet())
-
         score = 0
-
         for word in processed_text:
             if word in mood_values.positive_words:
                 score += 0.6
@@ -37,8 +35,8 @@ class MoodAnalyser:
         # Remove hashtag from words
         text = re.sub(r'#([^\s]+)', r'\1', text)
         # trim
-        text = text.strip('\'"')
+        text = text.strip(' ')
         # trim
-        text = text.split('\'"')
+        text = text.split(' ')
         return text
 

@@ -32,7 +32,7 @@ class Listener(StreamListener):
         self.count = 0
         self.tweets = []
         self.conn = sqlite3.connect('../DB/iscp.db', check_same_thread=False)
-        # self.analyser = MoodAnalyser()
+        self.analyser = MoodAnalyser()
         # self.save_file = self.tweets
         self.db = DataBase()
         self.max_tweets = 10000
@@ -47,7 +47,7 @@ class Listener(StreamListener):
         if self.db.get_status() == "active":
             self.count += 1
             tweet = self.create_tweet(status)
-            # self.analyser.analyse(tweet)
+            self.analyser.analyse(tweet)
             self.tweets.append(tweet)
             self.save_avg_mood()
             self.db.save_count(self.count)

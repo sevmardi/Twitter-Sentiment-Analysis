@@ -1,51 +1,30 @@
 import re
-import json
+from src.data import mood_values
+
 
 
 class MoodAnalyser:
     def __init__(self):
-        # initiate the moods dictionary from json
-        try:
-            fr = open("../data/mood_value.json", "r")
-            mood_json = fr.read()
-            self.mood_values = json.loads(mood_json)['moods']
-            self.mood_values_tbd = json.loads(mood_json)['TBD']
-            fr.close()
-        except BaseException as e:
-            print('Mood/value file not found.', e)
+        pass
 
     def analyse(self, tweet):
-        tweet.mood = self.get_mood(tweet.get_tweet())
+        processed_text = self.process_text(tweet.get_tweet())
 
-        return tweet
+        score = 0
 
-    def get_mood(self, tweet_text):
-        # clean up the string, make it a dictionary
-        clear_tweet_text = self._process_text(tweet_text)
-        tweet_dict = str(clear_tweet_text).split(' ')
-
-        # we are going to calculate mood
-        mood = 0
-
-        # mood dict build: [word]:[amount]
-        # What we do with it:
-        # calculate the word mood value (negative / positive)
-        for word in tweet_dict:
-            word = word
-            word_mood = self._calculate_mood(word.lower())
-            mood += word_mood
-        return mood
-
-    def _calculate_mood(self, tweet_word):
-        if tweet_word in self.mood_values.keys():
-            return self.mood_values[tweet_word]
-        elif tweet_word in self.mood_values_tbd.keys():
-            return self.mood_values_tbd[tweet_word]
+        for word in processed_text:
+            if word in mood_values.positive_words:
+                score += 0.6
+            if word in mood_values.negative_words:
+                score -= 0.5
+        if score <= -0.5:
+            tweet.set_sentiment("neg")
+        elif score >= 0.5:
+            tweet.set_sentiment("pos")
         else:
-            return 0
+            tweet.set_sentiment("neu")
 
-    # TODO
-    def _process_text(self, text):
+    def process_text(self, text):
         text = text.lower()
         text = re.sub(r'[^a-zA-Z0-9 ]', ' ', text)
         # Remove links
@@ -58,5 +37,8 @@ class MoodAnalyser:
         # Remove hashtag from words
         text = re.sub(r'#([^\s]+)', r'\1', text)
         # trim
+        text = text.strip('\'"')
+        # trim
         text = text.split('\'"')
         return text
+

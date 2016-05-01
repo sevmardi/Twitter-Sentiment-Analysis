@@ -32,7 +32,7 @@ class Listener(StreamListener):
         self.count = 0
         self.tweets = []
         self.conn = sqlite3.connect('../DB/iscp.db', check_same_thread=False)
-        self.analyser = MoodAnalyser()
+        # self.analyser = MoodAnalyser()
         #self.save_file = self.tweets
         self.db = DataBase()
         self.max_tweets = 10
@@ -47,8 +47,9 @@ class Listener(StreamListener):
         if self.db.get_status() == "active":
             self.count += 1
             tweet = self.create_tweet(status)
-            self.analyser.analyse(tweet)
+            #self.analyser.analyse(tweet)
             self.tweets.append(tweet)
+            self.save_avg_mood()
             self.db.save_count(self.count)
             return True
         self.save_tweets()
@@ -96,3 +97,24 @@ class Listener(StreamListener):
 		Creates a tweet from the given json object from the twitter api.
 		"""
         return Tweet(status.text.encode("utf8"), str(status.created_at), status.user.screen_name)
+
+    def save_avg_mood(self):
+        pos_tweets = 0
+        neg_tweets = 0
+        neu_tweets = 0
+        mood = ''
+
+        for tweet in self.tweets:
+            if tweet.get_sentiment() == 'pos':
+                pos_tweets = pos_tweets + 1
+            elif tweet.get_sentiment() == 'neg':
+                neg_tweets = neg_tweets + 1
+            else:
+                neu_tweets = neu_tweets + 1
+
+            if pos_tweets > neg_tweets and pos_tweets > neu_tweets:
+                mood = 'pos'
+            elif neg_tweets > pos_tweets and neg_tweets > neu_tweets:
+                mood = 'neg'
+            else:
+                mood = 'neu'

@@ -12,7 +12,7 @@ class Tweet(object):
         self.datetime = datetime
         self.user = user
         self.sentiment = ''
-        self.mood = 0
+
 
     def get_tweet(self):
         """

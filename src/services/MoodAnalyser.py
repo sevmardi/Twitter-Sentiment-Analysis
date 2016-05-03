@@ -8,8 +8,12 @@ class MoodAnalyser:
         pass
 
     def analyse(self, tweet):
+
         processed_text = self.process_text(tweet.get_tweet())
+
+        # calculate mood
         score = 0
+
         for word in processed_text:
             if word in mood_values.positive_words:
                 score += 0.6
@@ -21,6 +25,13 @@ class MoodAnalyser:
             tweet.set_sentiment("pos")
         else:
             tweet.set_sentiment("neu")
+
+    # def get_mood(self, tweet):
+    #     text_clean_up  = self.clear_text(tweet_text)
+    #     tweet_dict = str(text_clean_up).split(' ')
+    #
+    # def clear_text(self, text):
+    #     text = re.sub(r'[^a-zA-Z0-9 ]', ' ', text)
 
     def process_text(self, text):
         text = text.lower()
@@ -39,4 +50,3 @@ class MoodAnalyser:
         # trim
         text = text.split(' ')
         return text
-

@@ -65,3 +65,13 @@ class DataBase(object):
         self.conn.execute(" DELETE from tweets  where datetime(created_at) < date('now','-8 day') ")
         self.conn.commit()
         return True
+
+    def save_sent_count(self,  pos, neg, neu):
+        cursor = self.conn.cursor()
+        cursor.execute("UPDATE stream_status SET pos_tweets=?, neg_tweets=?, neu_tweets=? WHERE id = 1", (pos, neg, neu))
+        self.conn.commit()
+
+    def save_mood(self, mood):
+        cursor = self.conn.cursor()
+        cursor.execute("UPDATE stream_status SET avg_mood=? WHERE id = 1", (mood,))
+        self.conn.commit()

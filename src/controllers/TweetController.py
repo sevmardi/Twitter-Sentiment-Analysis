@@ -19,7 +19,7 @@ class TweetController():
         self.db = DataBase()
         # self.tweet_gui = tweet_gui
         self.default_keyword = "Trump"
-        self.create_table_if_not_exist()
+        self.db.create_table_if_not_exist()
         self.max_tweets = 10000
 
     # def start_stream(self, tweets_to_add):
@@ -48,9 +48,6 @@ class TweetController():
     def set_keyword(self, default_keyword):
         self.default_keyword = default_keyword
         print(default_keyword)
-
-    def create_table_if_not_exist(self):
-        self.db.create_table_if_not_exist()
 
 
 if __name__ == '__main__':

@@ -2,7 +2,6 @@ import re
 from src.data import mood_values
 
 
-
 class MoodAnalyser:
     def __init__(self):
         pass

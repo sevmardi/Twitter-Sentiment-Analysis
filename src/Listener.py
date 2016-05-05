@@ -39,11 +39,7 @@ class Listener(StreamListener):
         print("Listener created")
 
     def on_status(self, status):
-        """
-		Called when a tweet is recieved. It creates a Tweet object and passes it to the Analyser. It saves the tweet
-		in memory and writes the recieved tweet count to the database.
-		"""
-        print("Tweet recieved")
+        print("Tweet received")
         if self.db.get_status() == "active":
             self.count += 1
             tweet = self.create_tweet(status)
@@ -68,10 +64,6 @@ class Listener(StreamListener):
         f.close()
 
     def on_error(self, status_code):
-        """
-		Called when a error is recieved from the Twitter api.
-		"""
-
         sys.stderr.write('Error:' + str(status_code) + '\n')
         return False
 
@@ -85,17 +77,11 @@ class Listener(StreamListener):
         return
 
     def on_disconnect(self, notice):
-        """
-		Creates a tweet from the given json object from the twitter api.
-		"""
         print("Disconnected")
         self.save_tweets()
         return
 
     def create_tweet(self, status):
-        """
-		Creates a tweet from the given json object from the twitter api.
-		"""
         return Tweet(status.text.encode("utf8"), str(status.created_at), status.user.screen_name)
 
     def save_avg_mood(self):
@@ -103,7 +89,6 @@ class Listener(StreamListener):
         neg_tweets = 0
         neu_tweets = 0
         mood = ''
-
         for tweet in self.tweets:
             if tweet.get_sentiment() == 'pos':
                 pos_tweets += 1
@@ -118,3 +103,5 @@ class Listener(StreamListener):
                 mood = 'neg'
             else:
                 mood = 'neu'
+            self.db.save_sent_count(pos_tweets, neg_tweets, neu_tweets)
+            self.db.save_mood(mood)

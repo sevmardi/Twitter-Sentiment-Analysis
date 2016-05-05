@@ -43,6 +43,7 @@ class Listener(StreamListener):
         if self.db.get_status() == "active":
             self.count += 1
             tweet = self.create_tweet(status)
+            print(tweet)
             self.analyser.analyse(tweet)
             self.tweets.append(tweet)
             self.save_avg_mood()

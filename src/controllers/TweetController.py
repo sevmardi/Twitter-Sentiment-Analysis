@@ -8,7 +8,7 @@ import tkinter
 from src.Listener import Listener
 
 
-class TweetController():
+class TweetController:
     """docstring for Controller"""
 
     def __init__(self):

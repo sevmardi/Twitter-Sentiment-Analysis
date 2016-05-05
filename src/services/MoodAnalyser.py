@@ -34,18 +34,17 @@ class MoodAnalyser:
 
     def process_text(self, text):
         text = text.lower()
-        text = re.sub(r'[^a-zA-Z0-9 ]', ' ', text)
         # Remove links
         text = re.sub('((www\.[^\s]+)|(https?://[^\s]+)|(http://[^\s]+))', 'URL', text)
-
         # Remove mentions
         text = re.sub('@[^\s]+', 'MENTION', text)
         # Remove white spaces
         text = re.sub('[\s]+', ' ', text)
         # Remove hashtag from words
         text = re.sub(r'#([^\s]+)', r'\1', text)
+
         # trim
-        text = text.strip(' ')
-        # trim
-        text = text.split(' ')
+        text = text.strip('\'"')
+        # Split text to array
+        text = text.split()
         return text

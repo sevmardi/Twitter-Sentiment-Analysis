@@ -68,10 +68,10 @@ class DataBase(object):
 
     def save_sent_count(self,  pos, neg, neu):
         cursor = self.conn.cursor()
-        cursor.execute("UPDATE stream_status SET pos_tweets=?, neg_tweets=?, neu_tweets=? WHERE id = 1", (pos, neg, neu))
+        cursor.execute("UPDATE tweets SET pos_tweets=?, neg_tweets=?, neu_tweets=? WHERE id = 1", (pos, neg, neu))
         self.conn.commit()
 
     def save_mood(self, mood):
         cursor = self.conn.cursor()
-        cursor.execute("UPDATE stream_status SET avg_mood=? WHERE id = 1", (mood,))
+        cursor.execute("UPDATE tweets SET avg_mood=? WHERE id = 1", (mood,))
         self.conn.commit()

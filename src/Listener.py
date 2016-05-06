@@ -9,6 +9,7 @@ from src.services.MoodAnalyser import MoodAnalyser
 from src.models.Tweet import Tweet
 from tweepy.streaming import StreamListener
 from src.DB.DataBase import DataBase
+from tweepy import Stream
 
 """
 Class used to retrieve Tweets from the twitter api. It uses the Twitter stream api.
@@ -22,7 +23,7 @@ Class used to retrieve Tweets from the twitter api. It uses the Twitter stream a
 
 class Listener(StreamListener):
     # get a dictionary with keys for the twitter api
-    fr = open('../config/config.json')
+    fr = open('config/config.json')
     api_data = json.loads(fr.read())
     fr.close()
 
@@ -30,39 +31,47 @@ class Listener(StreamListener):
         super().__init__()
         self.save_location = save_location
         self.count = 0
-        self.tweets = []
-        self.conn = sqlite3.connect('../DB/iscp.db', check_same_thread=False)
+        # self.tweets = []
+        self.conn = sqlite3.connect('DB/iscp.db', check_same_thread=False)
         self.analyser = MoodAnalyser()
         # self.save_file = self.tweets
         self.db = DataBase()
-        self.max_tweets = 10000
+        self.max_tweets = 10
         print("Listener created")
 
-    def on_status(self, status):
-        print("Tweet received")
-        if self.db.get_status() == "active":
-            self.count += 1
-            tweet = self.create_tweet(status)
-            print(tweet)
-            self.analyser.analyse(tweet)
-            self.tweets.append(tweet)
-            self.save_avg_mood()
-            self.db.save_count(self.count)
-            return True
-        self.save_tweets()
-        return False
+    def on_data(self, data):
+        print('tweets receiving..')
+        tweets = json.loads(data)
+        try:
+            if self.db.fetch_number_of_tweets() != self.max_tweets:
+                timestamp = tweets['timestamp_ms']
+                tweet = tweets['text']
+                userData = tweets['user']
+                user = userData['screen_name']
 
-    # def on_data(self, raw_data):
-    #     print('tweets receiving..')
-    #     data = json.loads(raw_data)
-    #     save_file.write(str(data))
-    #     self.data_to_fill()
+                if tweet.startswith("RT @") or tweet.startswith("@"):
+                    return True
+                if '"' in tweet:
+                    tweet.replace('"', '')
+                if '"' in user:
+                    user.replace('"', '')
+
+                self.db.insert_tweet(tweet, user,timestamp)
+            else:
+                # self.on_disconnect()
+                self.analyser.start_up()
+                return False
+        except KeyError as e:
+            print(e)
 
     def save_tweets(self):
         print("Saving tweets to tweets.json")
         f = open(os.path.dirname(__file__) + self.save_location, "w")
         f.write(jsonstruct.encode(self.tweets))
         f.close()
+
+    # def create_tweet(self, status):
+    #     return print(Tweet(status.text.encode("utf8"), str(status.created_at), status.user.screen_name))
 
     def on_error(self, status_code):
         sys.stderr.write('Error:' + str(status_code) + '\n')
@@ -77,32 +86,7 @@ class Listener(StreamListener):
         time.sleep(60)
         return
 
-    def on_disconnect(self, notice):
+    def on_disconnect(self):
         print("Disconnected")
-        self.save_tweets()
+        Stream.disconnect()
         return
-
-    def create_tweet(self, status):
-        return Tweet(status.text.encode("utf8"), str(status.created_at), status.user.screen_name)
-
-    def save_avg_mood(self):
-        pos_tweets = 0
-        neg_tweets = 0
-        neu_tweets = 0
-        mood = ''
-        for tweet in self.tweets:
-            if tweet.get_sentiment() == 'pos':
-                pos_tweets += 1
-            elif tweet.get_sentiment() == 'neg':
-                neg_tweets += 1
-            else:
-                neu_tweets += 1
-
-            if pos_tweets > neg_tweets and pos_tweets > neu_tweets:
-                mood = 'pos'
-            elif neg_tweets > pos_tweets and neg_tweets > neu_tweets:
-                mood = 'neg'
-            else:
-                mood = 'neu'
-            self.db.save_sent_count(pos_tweets, neg_tweets, neu_tweets)
-            self.db.save_mood(mood)

@@ -1,10 +1,7 @@
-import os
 from src.DB.DataBase import DataBase
-from tkinter import simpledialog
 import tweepy
 from tweepy import OAuthHandler
 from tweepy import Stream
-import tkinter
 from src.Listener import Listener
 
 
@@ -20,24 +17,8 @@ class TweetController:
         # self.tweet_gui = tweet_gui
         self.default_keyword = "Trump"
         self.db.create_table_if_not_exist()
-        self.max_tweets = 10000
-
-    # def start_stream(self, tweets_to_add):
-    #     self.tweet_listener = Listener()
-    #     try:
-    #         if tweets_to_add + self.db.fetch_all_tweets() != self.max_tweets:
-    #             self.stream = Stream(auth=self.auth, listener=self.tweet_listener)
-    #             self.stream.filter(track=[self.default_keyword], async=True)
-    #         else:
-    #             pass
-    #     except BaseException as e:
-    #         print(e)
-    #
-    #         return False
 
     def start_stream(self):
-        self.db.reset_status()
-        self.db.set_status("active")
         self.tweet_listener = Listener()
         self.stream = Stream(auth=self.auth, listener=self.tweet_listener)
         self.stream.filter(track=[self.default_keyword], async=True)

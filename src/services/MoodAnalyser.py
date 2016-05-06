@@ -1,50 +1,74 @@
 import re
 from src.data import mood_values
+from src.DB.DataBase import DataBase
 
 
 class MoodAnalyser:
     def __init__(self):
-        pass
+        self.db = DataBase()
 
-    def analyse(self, tweet):
+    def start_up(self):
+        count = 0
+        tweets = self.db.fetch_all_tweets()
+        for tweet in tweets:
+            count += 1
+            self.analyse(tweet, count)
 
-        processed_text = self.process_text(tweet.get_tweet())
+    def analyse(self, tweet, count):
+        tweet = "".join(tweet)
+        # processed_text = self.process_text(tweet)
 
         # calculate mood
         score = 0
 
-        for word in processed_text:
+        for word in tweet.split():
             if word in mood_values.positive_words:
                 score += 0.6
             if word in mood_values.negative_words:
                 score -= 0.5
-        if score <= -0.5:
-            tweet.set_sentiment("neg")
-        elif score >= 0.5:
-            tweet.set_sentiment("pos")
+
+        self.scoring(score, count)
+
+    def scoring(self,tweetScore, tweetNummer):
+        print("Dit is tweet #" + str(tweetNummer))
+
+        # if tweetScore > 0:
+        #     print("positief")
+        #     self.db.set_mood(tweetNummer, '2')
+        #
+        # elif tweetScore < 0:
+        #     print("negatief")
+        #     self.db.set_mood(tweetNummer, '0')
+        #
+        # else:
+        #     print("neutraal")
+        #     self.db.set_mood(tweetNummer, '1')
+
+        if tweetScore <= -0.5:
+            # tweet is negative
+            self.db.set_mood(tweetNummer, '-1')
+        elif tweetScore >= 0.5:
+            # tweet is positive
+            self.db.set_mood(tweetNummer, "+1")
         else:
-            tweet.set_sentiment("neu")
+            # tweet is neutral
+            self.db.set_mood(tweetNummer, "0.5")
 
-    # def get_mood(self, tweet):
-    #     text_clean_up  = self.clear_text(tweet_text)
-    #     tweet_dict = str(text_clean_up).split(' ')
+
+    # @staticmethod
+    # def process_text(text):
+    #     # text = text.lower()
+    #     # Remove links
+    #     text = re.sub('((www\.[^\s]+)|(https?://[^\s]+)|(http://[^\s]+))', 'URL', text)
+    #     # Remove mentions
+    #     text = re.sub('@[^\s]+', 'MENTION', text)
+    #     # Remove white spaces
+    #     text = re.sub('[\s]+', ' ', text)
+    #     # Remove hashtag from words
+    #     text = re.sub(r'#([^\s]+)', r'\1', text)
     #
-    # def clear_text(self, text):
-    #     text = re.sub(r'[^a-zA-Z0-9 ]', ' ', text)
-
-    def process_text(self, text):
-        text = text.lower()
-        # Remove links
-        text = re.sub('((www\.[^\s]+)|(https?://[^\s]+)|(http://[^\s]+))', 'URL', text)
-        # Remove mentions
-        text = re.sub('@[^\s]+', 'MENTION', text)
-        # Remove white spaces
-        text = re.sub('[\s]+', ' ', text)
-        # Remove hashtag from words
-        text = re.sub(r'#([^\s]+)', r'\1', text)
-
-        # trim
-        text = text.strip('\'"')
-        # Split text to array
-        text = text.split()
-        return text
+    #     # trim
+    #     text = text.strip('\'"')
+    #     # Split text to array
+    #     text = text.split()
+    #     return text

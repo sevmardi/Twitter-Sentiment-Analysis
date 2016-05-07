@@ -32,11 +32,11 @@ class Listener(StreamListener):
         self.save_location = save_location
         self.count = 0
         # self.tweets = []
-        self.conn = sqlite3.connect('DB/iscp.db', check_same_thread=False)
+        # self.conn = sqlite3.connect('../DB/iscp.db', check_same_thread=False)
         self.analyser = MoodAnalyser()
         # self.save_file = self.tweets
         self.db = DataBase()
-        self.max_tweets = 10
+        self.max_tweets = 500
         print("Listener created")
 
     def on_data(self, data):

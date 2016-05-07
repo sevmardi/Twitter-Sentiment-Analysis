@@ -1,7 +1,6 @@
 import sqlite3
 
 
-
 class DataBase(object):
     def __init__(self):
         self.conn = sqlite3.connect('DB/iscp.db', check_same_thread=False)
@@ -39,14 +38,18 @@ class DataBase(object):
 
     def get_mood(self):
         self.cur.execute("SELECT COUNT(score) FROM tweets WHERE score = -1")
-        negatieve_woorden = self.cur.fetchone()[-1]
+        negatieve_woorden = self.cur.fetchone()[0]
 
         self.cur.execute("SELECT COUNT(score) FROM tweets WHERE score = 0.5")
-        neutrale_woorden = self.cur.fetchone()[5]
+        neutrale_woorden = self.cur.fetchone()[0]
 
         self.cur.execute("SELECT COUNT(score) FROM tweets WHERE score = +1")
-        positieve_woorden = self.cur.fetchone()[+1]
+        positieve_woorden = self.cur.fetchone()[0]
 
         analyseLijst = [negatieve_woorden, neutrale_woorden, positieve_woorden]
-
         return analyseLijst
+
+    def getTimeChart(self):
+        self.cur.execute("SELECT date, score FROM tweets ORDER BY date ASC")
+        data = (self.cur.fetchall())
+        return data

@@ -20,7 +20,6 @@ class MoodAnalyser:
 
         # calculate mood
         score = 0
-
         for word in tweet.split():
             if word in mood_values.positive_words:
                 score += 0.6
@@ -31,20 +30,7 @@ class MoodAnalyser:
 
     def scoring(self,tweetScore, tweetNummer):
         print("Dit is tweet #" + str(tweetNummer))
-
-        # if tweetScore > 0:
-        #     print("positief")
-        #     self.db.set_mood(tweetNummer, '2')
-        #
-        # elif tweetScore < 0:
-        #     print("negatief")
-        #     self.db.set_mood(tweetNummer, '0')
-        #
-        # else:
-        #     print("neutraal")
-        #     self.db.set_mood(tweetNummer, '1')
-
-        if tweetScore <= -0.5:
+        if tweetScore <= -1:
             # tweet is negative
             self.db.set_mood(tweetNummer, '-1')
         elif tweetScore >= 0.5:

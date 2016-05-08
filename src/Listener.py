@@ -27,7 +27,7 @@ class Listener(StreamListener):
     api_data = json.loads(fr.read())
     fr.close()
 
-    def __init__(self, save_location='/data/tweets.json'):
+    def __init__(self, save_location='data/tweets.json'):
         super().__init__()
         self.save_location = save_location
         self.count = 0

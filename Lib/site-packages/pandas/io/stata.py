@@ -161,9 +161,15 @@ def read_stata(filepath_or_buffer, convert_dates=True,
                          chunksize=chunksize, encoding=encoding)
 
     if iterator or chunksize:
-        return reader
+        try:
+            return reader
+        except StopIteration:
+            reader.close()
 
-    return reader.read()
+    try:
+        return reader.read()
+    finally:
+        reader.close()
 
 _date_formats = ["%tc", "%tC", "%td", "%d", "%tw", "%tm", "%tq", "%th", "%ty"]
 
@@ -1933,7 +1939,7 @@ class StataWriter(StataParser):
             * Variables with names that are too long
 
         When an illegal variable name is detected, it is converted, and if
-        dates are exported, the variable name is propogated to the date
+        dates are exported, the variable name is propagated to the date
         conversion dictionary
         """
         converted_names = []

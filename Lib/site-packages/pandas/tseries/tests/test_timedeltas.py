@@ -1083,6 +1083,35 @@ class TestTimedeltas(tm.TestCase):
         ns_td = Timedelta(1, 'ns')
         self.assertNotEqual(hash(ns_td), hash(ns_td.to_pytimedelta()))
 
+    def test_implementation_limits(self):
+        min_td = Timedelta(Timedelta.min)
+        max_td = Timedelta(Timedelta.max)
+
+        # GH 12727
+        # timedelta limits correspond to int64 boundaries
+        self.assertTrue(min_td.value == np.iinfo(np.int64).min + 1)
+        self.assertTrue(max_td.value == np.iinfo(np.int64).max)
+
+        # Beyond lower limit, a NAT before the Overflow
+        self.assertIsInstance(min_td - Timedelta(1, 'ns'),
+                              pd.tslib.NaTType)
+
+        with tm.assertRaises(OverflowError):
+            min_td - Timedelta(2, 'ns')
+
+        with tm.assertRaises(OverflowError):
+            max_td + Timedelta(1, 'ns')
+
+        # Same tests using the internal nanosecond values
+        td = Timedelta(min_td.value - 1, 'ns')
+        self.assertIsInstance(td, pd.tslib.NaTType)
+
+        with tm.assertRaises(OverflowError):
+            Timedelta(min_td.value - 2, 'ns')
+
+        with tm.assertRaises(OverflowError):
+            Timedelta(max_td.value + 1, 'ns')
+
 
 class TestTimedeltaIndex(tm.TestCase):
     _multiprocess_can_split_ = True
@@ -1612,6 +1641,38 @@ class TestTimedeltaIndex(tm.TestCase):
             tm.assertIsInstance(taken, TimedeltaIndex)
             self.assertIsNone(taken.freq)
             self.assertEqual(taken.name, expected.name)
+
+    def test_take_fill_value(self):
+        # GH 12631
+        idx = pd.TimedeltaIndex(['1 days', '2 days', '3 days'],
+                                name='xxx')
+        result = idx.take(np.array([1, 0, -1]))
+        expected = pd.TimedeltaIndex(['2 days', '1 days', '3 days'],
+                                     name='xxx')
+        tm.assert_index_equal(result, expected)
+
+        # fill_value
+        result = idx.take(np.array([1, 0, -1]), fill_value=True)
+        expected = pd.TimedeltaIndex(['2 days', '1 days', 'NaT'],
+                                     name='xxx')
+        tm.assert_index_equal(result, expected)
+
+        # allow_fill=False
+        result = idx.take(np.array([1, 0, -1]), allow_fill=False,
+                          fill_value=True)
+        expected = pd.TimedeltaIndex(['2 days', '1 days', '3 days'],
+                                     name='xxx')
+        tm.assert_index_equal(result, expected)
+
+        msg = ('When allow_fill=True and fill_value is not None, '
+               'all indices must be >= -1')
+        with tm.assertRaisesRegexp(ValueError, msg):
+            idx.take(np.array([1, 0, -2]), fill_value=True)
+        with tm.assertRaisesRegexp(ValueError, msg):
+            idx.take(np.array([1, 0, -5]), fill_value=True)
+
+        with tm.assertRaises(IndexError):
+            idx.take(np.array([1, -5]))
 
     def test_isin(self):
 

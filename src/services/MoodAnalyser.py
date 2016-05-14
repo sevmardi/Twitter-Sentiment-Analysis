@@ -17,7 +17,6 @@ class MoodAnalyser:
     def analyse(self, tweet, count):
         tweet = "".join(tweet)
         # processed_text = self.process_text(tweet)
-
         # calculate mood
         score = 0
         for word in tweet.split():
@@ -42,19 +41,19 @@ class MoodAnalyser:
 
 
     # @staticmethod
-    # def process_text(text):
-    #     # text = text.lower()
-    #     # Remove links
-    #     text = re.sub('((www\.[^\s]+)|(https?://[^\s]+)|(http://[^\s]+))', 'URL', text)
-    #     # Remove mentions
-    #     text = re.sub('@[^\s]+', 'MENTION', text)
-    #     # Remove white spaces
-    #     text = re.sub('[\s]+', ' ', text)
-    #     # Remove hashtag from words
-    #     text = re.sub(r'#([^\s]+)', r'\1', text)
-    #
-    #     # trim
-    #     text = text.strip('\'"')
-    #     # Split text to array
-    #     text = text.split()
-    #     return text
+    def process_text(text):
+        # text = text.lower()
+        # Remove links
+        text = re.sub('((www\.[^\s]+)|(https?://[^\s]+)|(http://[^\s]+))', 'URL', text)
+        # Remove mentions
+        text = re.sub('@[^\s]+', 'MENTION', text)
+        # Remove white spaces
+        text = re.sub('[\s]+', ' ', text)
+        # Remove hashtag from words
+        text = re.sub(r'#([^\s]+)', r'\1', text)
+
+        # trim
+        text = text.strip('\'"')
+        # Split text to array
+        text = text.split()
+        return text

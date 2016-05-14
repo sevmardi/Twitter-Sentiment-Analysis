@@ -459,13 +459,15 @@ class TestMerge(tm.TestCase):
         # _assert_same_contents(expected, expected2.ix[:, expected.columns])
 
     def test_join_hierarchical_mixed(self):
+        # GH 2024
         df = DataFrame([(1, 2, 3), (4, 5, 6)], columns=['a', 'b', 'c'])
         new_df = df.groupby(['a']).agg({'b': [np.mean, np.sum]})
         other_df = DataFrame(
             [(1, 2, 3), (7, 10, 6)], columns=['a', 'b', 'd'])
         other_df.set_index('a', inplace=True)
-
-        result = merge(new_df, other_df, left_index=True, right_index=True)
+        # GH 9455, 12219
+        with tm.assert_produces_warning(UserWarning):
+            result = merge(new_df, other_df, left_index=True, right_index=True)
         self.assertTrue(('b', 'mean') in result)
         self.assertTrue('b' in result)
 
@@ -923,6 +925,41 @@ class TestMerge(tm.TestCase):
 
         tm.assertIsInstance(result, NotADataFrame)
 
+    def test_empty_dtype_coerce(self):
+
+        # xref to #12411
+        # xref to #12045
+        # xref to #11594
+        # see below
+
+        # 10571
+        df1 = DataFrame(data=[[1, None], [2, None]], columns=['a', 'b'])
+        df2 = DataFrame(data=[[3, None], [4, None]], columns=['a', 'b'])
+        result = concat([df1, df2])
+        expected = df1.dtypes
+        assert_series_equal(result.dtypes, expected)
+
+    def test_dtype_coerceion(self):
+
+        # 12411
+        df = DataFrame({'date': [pd.Timestamp('20130101').tz_localize('UTC'),
+                                 pd.NaT]})
+
+        result = concat([df.iloc[[0]], df.iloc[[1]]])
+        assert_series_equal(result.dtypes, df.dtypes)
+
+        # 12045
+        import datetime
+        df = DataFrame({'date': [datetime.datetime(2012, 1, 1),
+                                 datetime.datetime(1012, 1, 2)]})
+        result = concat([df.iloc[[0]], df.iloc[[1]]])
+        assert_series_equal(result.dtypes, df.dtypes)
+
+        # 11594
+        df = DataFrame({'text': ['some words'] + [None] * 9})
+        result = concat([df.iloc[[0]], df.iloc[[1]]])
+        assert_series_equal(result.dtypes, df.dtypes)
+
     def test_append_dtype_coerce(self):
 
         # GH 4993
@@ -1030,6 +1067,8 @@ class TestMerge(tm.TestCase):
             'key': [1., 2, 3]})
         result = pd.merge(left, right, on='key', how='outer')
         assert_frame_equal(result, expected)
+        self.assertEqual(result['value_x'].dtype, 'datetime64[ns, US/Eastern]')
+        self.assertEqual(result['value_y'].dtype, 'datetime64[ns, US/Eastern]')
 
     def test_merge_on_periods(self):
         left = pd.DataFrame({'key': pd.period_range('20151010', periods=2,
@@ -1060,6 +1099,8 @@ class TestMerge(tm.TestCase):
                               'key': [1., 2, 3]})
         result = pd.merge(left, right, on='key', how='outer')
         assert_frame_equal(result, expected)
+        self.assertEqual(result['value_x'].dtype, 'object')
+        self.assertEqual(result['value_y'].dtype, 'object')
 
     def test_concat_NaT_series(self):
         # GH 11693
@@ -1161,12 +1202,27 @@ class TestMerge(tm.TestCase):
         result = pd.concat([first, second])
         self.assertEqual(result[0].dtype, 'datetime64[ns, Europe/London]')
 
+    def test_concat_tz_series_with_datetimelike(self):
+        # GH 12620
+        # tz and timedelta
+        x = [pd.Timestamp('2011-01-01', tz='US/Eastern'),
+             pd.Timestamp('2011-02-01', tz='US/Eastern')]
+        y = [pd.Timedelta('1 day'), pd.Timedelta('2 day')]
+        result = concat([pd.Series(x), pd.Series(y)], ignore_index=True)
+        tm.assert_series_equal(result, pd.Series(x + y, dtype='object'))
+
+        # tz and period
+        y = [pd.Period('2011-03', freq='M'), pd.Period('2011-04', freq='M')]
+        result = concat([pd.Series(x), pd.Series(y)], ignore_index=True)
+        tm.assert_series_equal(result, pd.Series(x + y, dtype='object'))
+
     def test_concat_period_series(self):
         x = Series(pd.PeriodIndex(['2015-11-01', '2015-12-01'], freq='D'))
         y = Series(pd.PeriodIndex(['2015-10-01', '2016-01-01'], freq='D'))
         expected = Series([x[0], x[1], y[0], y[1]], dtype='object')
         result = concat([x, y], ignore_index=True)
         tm.assert_series_equal(result, expected)
+        self.assertEqual(result.dtype, 'object')
 
         # different freq
         x = Series(pd.PeriodIndex(['2015-11-01', '2015-12-01'], freq='D'))
@@ -1174,12 +1230,14 @@ class TestMerge(tm.TestCase):
         expected = Series([x[0], x[1], y[0], y[1]], dtype='object')
         result = concat([x, y], ignore_index=True)
         tm.assert_series_equal(result, expected)
+        self.assertEqual(result.dtype, 'object')
 
         x = Series(pd.PeriodIndex(['2015-11-01', '2015-12-01'], freq='D'))
         y = Series(pd.PeriodIndex(['2015-11-01', '2015-12-01'], freq='M'))
         expected = Series([x[0], x[1], y[0], y[1]], dtype='object')
         result = concat([x, y], ignore_index=True)
         tm.assert_series_equal(result, expected)
+        self.assertEqual(result.dtype, 'object')
 
         # non-period
         x = Series(pd.PeriodIndex(['2015-11-01', '2015-12-01'], freq='D'))
@@ -1187,12 +1245,74 @@ class TestMerge(tm.TestCase):
         expected = Series([x[0], x[1], y[0], y[1]], dtype='object')
         result = concat([x, y], ignore_index=True)
         tm.assert_series_equal(result, expected)
+        self.assertEqual(result.dtype, 'object')
 
         x = Series(pd.PeriodIndex(['2015-11-01', '2015-12-01'], freq='D'))
         y = Series(['A', 'B'])
         expected = Series([x[0], x[1], y[0], y[1]], dtype='object')
         result = concat([x, y], ignore_index=True)
         tm.assert_series_equal(result, expected)
+        self.assertEqual(result.dtype, 'object')
+
+    def test_concat_empty_series(self):
+        # GH 11082
+        s1 = pd.Series([1, 2, 3], name='x')
+        s2 = pd.Series(name='y')
+        res = pd.concat([s1, s2], axis=1)
+        exp = pd.DataFrame({'x': [1, 2, 3], 'y': [np.nan, np.nan, np.nan]})
+        tm.assert_frame_equal(res, exp)
+
+        s1 = pd.Series([1, 2, 3], name='x')
+        s2 = pd.Series(name='y')
+        res = pd.concat([s1, s2], axis=0)
+        # name will be reset
+        exp = pd.Series([1, 2, 3])
+        tm.assert_series_equal(res, exp)
+
+        # empty Series with no name
+        s1 = pd.Series([1, 2, 3], name='x')
+        s2 = pd.Series(name=None)
+        res = pd.concat([s1, s2], axis=1)
+        exp = pd.DataFrame({'x': [1, 2, 3], 0: [np.nan, np.nan, np.nan]},
+                           columns=['x', 0])
+        tm.assert_frame_equal(res, exp)
+
+    def test_default_index(self):
+        # is_series and ignore_index
+        s1 = pd.Series([1, 2, 3], name='x')
+        s2 = pd.Series([4, 5, 6], name='y')
+        res = pd.concat([s1, s2], axis=1, ignore_index=True)
+        self.assertIsInstance(res.columns, pd.RangeIndex)
+        exp = pd.DataFrame([[1, 4], [2, 5], [3, 6]])
+        # use check_index_type=True to check the result have
+        # RangeIndex (default index)
+        tm.assert_frame_equal(res, exp, check_index_type=True,
+                              check_column_type=True)
+
+        # is_series and all inputs have no names
+        s1 = pd.Series([1, 2, 3])
+        s2 = pd.Series([4, 5, 6])
+        res = pd.concat([s1, s2], axis=1, ignore_index=False)
+        self.assertIsInstance(res.columns, pd.RangeIndex)
+        exp = pd.DataFrame([[1, 4], [2, 5], [3, 6]])
+        exp.columns = pd.RangeIndex(2)
+        tm.assert_frame_equal(res, exp, check_index_type=True,
+                              check_column_type=True)
+
+        # is_dataframe and ignore_index
+        df1 = pd.DataFrame({'A': [1, 2], 'B': [5, 6]})
+        df2 = pd.DataFrame({'A': [3, 4], 'B': [7, 8]})
+
+        res = pd.concat([df1, df2], axis=0, ignore_index=True)
+        exp = pd.DataFrame([[1, 5], [2, 6], [3, 7], [4, 8]],
+                           columns=['A', 'B'])
+        tm.assert_frame_equal(res, exp, check_index_type=True,
+                              check_column_type=True)
+
+        res = pd.concat([df1, df2], axis=1, ignore_index=True)
+        exp = pd.DataFrame([[1, 5, 3, 7], [2, 6, 4, 8]])
+        tm.assert_frame_equal(res, exp, check_index_type=True,
+                              check_column_type=True)
 
     def test_indicator(self):
         # PR #10054. xref #7412 and closes #8790.

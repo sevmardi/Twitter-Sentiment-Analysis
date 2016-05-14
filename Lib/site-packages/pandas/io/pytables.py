@@ -22,8 +22,8 @@ from pandas.sparse.array import BlockIndex, IntIndex
 from pandas.tseries.api import PeriodIndex, DatetimeIndex
 from pandas.tseries.tdi import TimedeltaIndex
 from pandas.core.base import StringMixin
-from pandas.core.common import (adjoin, pprint_thing, _asarray_tuplesafe,
-                                PerformanceWarning)
+from pandas.formats.printing import adjoin, pprint_thing
+from pandas.core.common import _asarray_tuplesafe, PerformanceWarning
 from pandas.core.algorithms import match, unique
 from pandas.core.categorical import Categorical
 from pandas.core.internals import (BlockManager, make_block,
@@ -1475,10 +1475,10 @@ class IndexCol(StringMixin):
 
     def convert(self, values, nan_rep, encoding):
         """ set the values from this selection: take = take ownership """
-        try:
+
+        # values is a recarray
+        if values.dtype.fields is not None:
             values = values[self.cname]
-        except:
-            pass
 
         values = _maybe_convert(values, self.kind, encoding)
 
@@ -2001,10 +2001,10 @@ class DataCol(IndexCol):
         if we can)
         """
 
-        try:
+        # values is a recarray
+        if values.dtype.fields is not None:
             values = values[self.cname]
-        except:
-            pass
+
         self.set_data(values)
 
         # use the meta if needed
@@ -3411,7 +3411,7 @@ class Table(Fixed):
                 except:
                     raise ValueError(
                         "cannot match existing table structure for [%s] on "
-                        "appending data" % ','.join(com.pprint_thing(item) for
+                        "appending data" % ','.join(pprint_thing(item) for
                                                     item in items))
             blocks = new_blocks
             blk_items = new_blk_items
@@ -4057,7 +4057,7 @@ class AppendableFrameTable(AppendableTable):
         if len(frames) == 1:
             df = frames[0]
         else:
-            df = concat(frames, axis=1, verify_integrity=False).consolidate()
+            df = concat(frames, axis=1)
 
         # apply the selection filters & axis orderings
         df = self.process_axes(df, columns=columns)

@@ -139,6 +139,17 @@ class TestSeriesConstructors(TestData, tm.TestCase):
         res = Series(cat)
         self.assertTrue(res.values.equals(cat))
 
+        # GH12574
+        self.assertRaises(
+            ValueError, lambda: Series(pd.Categorical([1, 2, 3]),
+                                       dtype='int64'))
+        cat = Series(pd.Categorical([1, 2, 3]), dtype='category')
+        self.assertTrue(com.is_categorical_dtype(cat))
+        self.assertTrue(com.is_categorical_dtype(cat.dtype))
+        s = Series([1, 2, 3], dtype='category')
+        self.assertTrue(com.is_categorical_dtype(s))
+        self.assertTrue(com.is_categorical_dtype(s.dtype))
+
     def test_constructor_maskedarray(self):
         data = ma.masked_all((3, ), dtype=float)
         result = Series(data)
@@ -487,6 +498,8 @@ class TestSeriesConstructors(TestData, tm.TestCase):
         expected = Series(pi.asobject)
         assert_series_equal(s, expected)
 
+        self.assertEqual(s.dtype, 'object')
+
     def test_constructor_dict(self):
         d = {'a': 0., 'b': 1., 'c': 2.}
         result = Series(d, index=['b', 'c', 'd', 'a'])
@@ -714,3 +727,14 @@ class TestSeriesConstructors(TestData, tm.TestCase):
         self.assertEqual(s.dtype, 'timedelta64[ns]')
         s = Series([pd.NaT, np.nan, '1 Day'])
         self.assertEqual(s.dtype, 'timedelta64[ns]')
+
+    def test_constructor_name_hashable(self):
+        for n in [777, 777., 'name', datetime(2001, 11, 11), (1, ), u"\u05D0"]:
+            for data in [[1, 2, 3], np.ones(3), {'a': 0, 'b': 1}]:
+                s = Series(data, name=n)
+                self.assertEqual(s.name, n)
+
+    def test_constructor_name_unhashable(self):
+        for n in [['name_list'], np.ones(2), {1: 2}]:
+            for data in [['name_list'], np.ones(2), {1: 2}]:
+                self.assertRaises(TypeError, Series, data, name=n)

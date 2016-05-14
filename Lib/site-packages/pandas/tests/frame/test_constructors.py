@@ -15,18 +15,17 @@ import numpy.ma as ma
 import numpy.ma.mrecords as mrecords
 
 from pandas.compat import (lmap, long, zip, range, lrange, lzip,
-                           OrderedDict)
+                           OrderedDict, is_platform_little_endian)
 from pandas import compat
 from pandas import (DataFrame, Index, Series, notnull, isnull,
                     MultiIndex, Timedelta, Timestamp,
                     date_range)
-from pandas.util.misc import is_little_endian
 from pandas.core.common import PandasError
 import pandas as pd
 import pandas.core.common as com
 import pandas.lib as lib
 
-from pandas.core.dtypes import DatetimeTZDtype
+from pandas.types.api import DatetimeTZDtype
 
 from pandas.util.testing import (assert_numpy_array_equal,
                                  assert_series_equal,
@@ -482,6 +481,20 @@ class TestDataFrameConstructors(tm.TestCase, TestData):
         assert_frame_equal(result_timedelta64, expected)
         assert_frame_equal(result_timedelta, expected)
         assert_frame_equal(result_Timedelta, expected)
+
+    def test_constructor_period(self):
+        # PeriodIndex
+        a = pd.PeriodIndex(['2012-01', 'NaT', '2012-04'], freq='M')
+        b = pd.PeriodIndex(['2012-02-01', '2012-03-01', 'NaT'], freq='D')
+        df = pd.DataFrame({'a': a, 'b': b})
+        self.assertEqual(df['a'].dtype, 'object')
+        self.assertEqual(df['b'].dtype, 'object')
+
+        # list of periods
+        df = pd.DataFrame({'a': a.asobject.tolist(),
+                           'b': b.asobject.tolist()})
+        self.assertEqual(df['a'].dtype, 'object')
+        self.assertEqual(df['b'].dtype, 'object')
 
     def test_nested_dict_frame_constructor(self):
         rng = pd.period_range('1/1/2000', periods=5)
@@ -1821,7 +1834,7 @@ class TestDataFrameConstructors(tm.TestCase, TestData):
 
         # this may fail on certain platforms because of a numpy issue
         # related GH6140
-        if not is_little_endian():
+        if not is_platform_little_endian():
             raise nose.SkipTest("known failure of test on non-little endian")
 
         # construction with a null in a recarray

@@ -9,7 +9,8 @@ from contextlib import contextmanager, closing
 
 from pandas.compat import StringIO, BytesIO, string_types, text_type
 from pandas import compat
-from pandas.core.common import pprint_thing, is_number, AbstractMethodError
+from pandas.formats.printing import pprint_thing
+from pandas.core.common import is_number, AbstractMethodError
 
 
 try:
@@ -55,7 +56,37 @@ _VALID_URLS = set(uses_relative + uses_netloc + uses_params)
 _VALID_URLS.discard('')
 
 
+class CParserError(ValueError):
+    """
+    Exception that is thrown by the C engine when it encounters
+    a parsing error in `pd.read_csv`
+    """
+    pass
+
+
 class DtypeWarning(Warning):
+    """
+    Warning that is raised whenever `pd.read_csv` encounters non-
+    uniform dtypes in a column(s) of a given CSV file
+    """
+    pass
+
+
+class EmptyDataError(ValueError):
+    """
+    Exception that is thrown in `pd.read_csv` (by both the C and
+    Python engines) when empty data or header is encountered
+    """
+    pass
+
+
+class ParserWarning(Warning):
+    """
+    Warning that is raised in `pd.read_csv` whenever it is necessary
+    to change parsers (generally from 'c' to 'python') contrary to the
+    one specified by the user due to lack of support or functionality for
+    parsing particular attributes of a CSV file with the requsted engine
+    """
     pass
 
 
@@ -360,6 +391,24 @@ def _get_handle(path, mode, encoding=None, compression=None):
         elif compression == 'bz2':
             import bz2
             f = bz2.BZ2File(path, mode)
+        elif compression == 'zip':
+            import zipfile
+            zip_file = zipfile.ZipFile(path)
+            zip_names = zip_file.namelist()
+
+            if len(zip_names) == 1:
+                file_name = zip_names.pop()
+                f = zip_file.open(file_name)
+            elif len(zip_names) == 0:
+                raise ValueError('Zero files found in ZIP file {}'
+                                 .format(path))
+            else:
+                raise ValueError('Multiple files found in ZIP file.'
+                                 ' Only one file per ZIP :{}'
+                                 .format(zip_names))
+        elif compression == 'xz':
+            lzma = compat.import_lzma()
+            f = lzma.LZMAFile(path, mode)
         else:
             raise ValueError('Unrecognized compression type: %s' %
                              compression)
@@ -379,7 +428,7 @@ def _get_handle(path, mode, encoding=None, compression=None):
     return f
 
 
-class UTF8Recoder:
+class UTF8Recoder(BaseIterator):
 
     """
     Iterator that reads an encoded stream and reencodes the input to UTF-8
@@ -387,9 +436,6 @@ class UTF8Recoder:
 
     def __init__(self, f, encoding):
         self.reader = codecs.getreader(encoding)(f)
-
-    def __iter__(self):
-        return self
 
     def read(self, bytes=-1):
         return self.reader.read(bytes).encode("utf-8")
@@ -399,9 +445,6 @@ class UTF8Recoder:
 
     def next(self):
         return next(self.reader).encode("utf-8")
-
-    # Python 3 iterator
-    __next__ = next
 
 
 if compat.PY3:  # pragma: no cover

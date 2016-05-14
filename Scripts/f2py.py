@@ -1,4 +1,4 @@
-#!C:\Users\HUNTED23\Documents\GitHub\iscp\Scripts\python.exe
+#!C:\Users\HUNTED23\Documents\GitHub\iscp_scripting\Scripts\python.exe
 # See http://cens.ioc.ee/projects/f2py2e/
 from __future__ import division, print_function
 

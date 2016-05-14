@@ -237,6 +237,22 @@ if PY3:
         else:
             return len(data)
 
+    def import_lzma():
+        """ import lzma from the std library """
+        import lzma
+        return lzma
+
+    def set_function_name(f, name, cls):
+        """ Bind the name/qualname attributes of the function """
+        f.__name__ = name
+        f.__qualname__ = '{klass}.{name}'.format(
+            klass=cls.__name__,
+            name=name)
+        f.__module__ = cls.__module__
+        return f
+
+    ResourceWarning = ResourceWarning
+
 else:
     string_types = basestring,
     integer_types = (int, long)
@@ -272,6 +288,19 @@ else:
             return sum([_EAW_MAP.get(east_asian_width(c), ambiguous_width) for c in data])
         else:
             return len(data)
+
+    def import_lzma():
+        """ import the backported lzma library
+        or raise ImportError if not available """
+        from backports import lzma
+        return lzma
+
+    def set_function_name(f, name, cls):
+        """ Bind the name attributes of the function """
+        f.__name__ = name
+        return f
+
+    class ResourceWarning(Warning): pass
 
 string_and_binary_types = string_types + (binary_type,)
 
@@ -325,6 +354,10 @@ if LooseVersion(dateutil.__version__) < '2.0':
     def parse_date(timestr, *args, **kwargs):
         timestr = bytes(timestr)
         return _date_parser.parse(timestr, *args, **kwargs)
+elif PY2 and LooseVersion(dateutil.__version__) == '2.0':
+    # dateutil brokenness
+    raise Exception('dateutil 2.0 incompatible with Python 2.x, you must '
+                    'install version 1.5 or 2.1+!')
 else:
     parse_date = _date_parser.parse
 
@@ -354,6 +387,10 @@ class OrderedDefaultdict(OrderedDict):
 
 
 # https://github.com/pydata/pandas/pull/9123
+def is_platform_little_endian():
+    """ am I little endian """
+    return sys.byteorder == 'little'
+
 def is_platform_windows():
     return sys.platform == 'win32' or sys.platform == 'cygwin'
 

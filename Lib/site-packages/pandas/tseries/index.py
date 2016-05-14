@@ -5,6 +5,7 @@ import warnings
 from datetime import time, datetime
 from datetime import timedelta
 import numpy as np
+from pandas.core.base import _shared_docs
 from pandas.core.common import (_NS_DTYPE, _INT64_DTYPE,
                                 _values_from_object, _maybe_box,
                                 is_object_dtype, is_datetime64_dtype,
@@ -22,8 +23,10 @@ from pandas.tseries.base import DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin
 from pandas.tseries.offsets import DateOffset, generate_range, Tick, CDay
 from pandas.tseries.tools import parse_time_string, normalize_date, to_time
 from pandas.tseries.timedeltas import to_timedelta
-from pandas.util.decorators import cache_readonly, deprecate_kwarg
+from pandas.util.decorators import (Appender, cache_readonly,
+                                    deprecate_kwarg, Substitution)
 import pandas.core.common as com
+import pandas.types.concat as _concat
 import pandas.tseries.offsets as offsets
 import pandas.tseries.tools as tools
 
@@ -59,6 +62,9 @@ def _field_accessor(name, field, docstring=None):
 
             result = tslib.get_start_end_field(
                 values, field, self.freqstr, month_kw)
+        elif field in ['weekday_name']:
+            result = tslib.get_date_name_field(values, field)
+            return self._maybe_mask_results(result)
         else:
             result = tslib.get_date_field(values, field)
 
@@ -206,7 +212,7 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
                          'daysinmonth', 'date', 'time', 'microsecond',
                          'nanosecond', 'is_month_start', 'is_month_end',
                          'is_quarter_start', 'is_quarter_end', 'is_year_start',
-                         'is_year_end', 'tz', 'freq']
+                         'is_year_end', 'tz', 'freq', 'weekday_name']
     _is_numeric_dtype = False
     _infer_as_myclass = True
 
@@ -689,12 +695,12 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
 
     @cache_readonly
     def _is_dates_only(self):
-        from pandas.core.format import _is_dates_only
+        from pandas.formats.format import _is_dates_only
         return _is_dates_only(self.values)
 
     @property
     def _formatter_func(self):
-        from pandas.core.format import _get_format_datetime64
+        from pandas.formats.format import _get_format_datetime64
         formatter = _get_format_datetime64(is_dates_only=self._is_dates_only)
         return lambda x: "'%s'" % formatter(x, tz=self.tz)
 
@@ -810,7 +816,7 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
 
     def _format_native_types(self, na_rep=u('NaT'),
                              date_format=None, **kwargs):
-        from pandas.core.format import _get_format_datetime64_from_values
+        from pandas.formats.format import _get_format_datetime64_from_values
         format = _get_format_datetime64_from_values(self, date_format)
 
         return tslib.format_array_from_datetime(self.asi8,
@@ -1124,7 +1130,7 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
             return (right_start == left_end + offset) or right_start in left
         except (ValueError):
 
-            # if we are comparing an offset that does not propogate timezones
+            # if we are comparing an offset that does not propagate timezones
             # this will raise
             return False
 
@@ -1149,7 +1155,7 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
             if left_end < right_end:
                 loc = right.searchsorted(left_end, side='right')
                 right_chunk = right.values[loc:]
-                dates = com._concat_compat((left.values, right_chunk))
+                dates = _concat._concat_compat((left.values, right_chunk))
                 return self._shallow_copy(dates)
             else:
                 return left
@@ -1562,6 +1568,12 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
         'dow',
         "The day of the week with Monday=0, Sunday=6")
     weekday = dayofweek
+
+    weekday_name = _field_accessor(
+        'weekday_name',
+        'weekday_name',
+        "The name of day in a week (ex: Friday)\n\n.. versionadded:: 0.18.1")
+
     dayofyear = _field_accessor(
         'dayofyear',
         'doy',
@@ -1629,7 +1641,9 @@ class DatetimeIndex(DatelikeOps, TimelikeOps, DatetimeIndexOpsMixin,
         return DatetimeIndex(new_values, freq='infer', name=self.name,
                              tz=self.tz)
 
-    def searchsorted(self, key, side='left'):
+    @Substitution(klass='DatetimeIndex', value='key')
+    @Appender(_shared_docs['searchsorted'])
+    def searchsorted(self, key, side='left', sorter=None):
         if isinstance(key, (np.ndarray, Index)):
             key = np.array(key, dtype=_NS_DTYPE, copy=False)
         else:
@@ -2134,9 +2148,9 @@ def cdate_range(start=None, end=None, periods=None, freq='C', tz=None,
 
 
 def _to_m8(key, tz=None):
-    '''
+    """
     Timestamp-like => dt64
-    '''
+    """
     if not isinstance(key, Timestamp):
         # this also converts strings
         key = Timestamp(key, tz=tz)
@@ -2215,7 +2229,7 @@ def _process_concat_data(to_concat, name):
             # well, technically not a "class" anymore...oh well
             klass = DatetimeIndex._simple_new
             kwargs = {'tz': tz}
-            concat = com._concat_compat
+            concat = _concat._concat_compat
     else:
         for i, x in enumerate(to_concat):
             if isinstance(x, DatetimeIndex):

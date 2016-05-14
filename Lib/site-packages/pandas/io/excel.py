@@ -13,13 +13,13 @@ import numpy as np
 from pandas.core.frame import DataFrame
 from pandas.io.parsers import TextParser
 from pandas.io.common import (_is_url, _urlopen, _validate_header_arg,
-                              get_filepath_or_buffer, _is_s3_url)
+                              EmptyDataError, get_filepath_or_buffer)
 from pandas.tseries.period import Period
 from pandas import json
 from pandas.compat import (map, zip, reduce, range, lrange, u, add_metaclass,
                            string_types)
 from pandas.core import config
-from pandas.core.common import pprint_thing
+from pandas.formats.printing import pprint_thing
 import pandas.compat as compat
 import pandas.compat.openpyxl_compat as openpyxl_compat
 import pandas.core.common as com
@@ -82,7 +82,8 @@ def read_excel(io, sheetname=0, header=0, skiprows=None, skip_footer=0,
 
     Parameters
     ----------
-    io : string, file-like object, pandas ExcelFile, or xlrd workbook.
+    io : string, path object (pathlib.Path or py._path.local.LocalPath),
+        file-like object, pandas ExcelFile, or xlrd workbook.
         The string could be a URL. Valid URL schemes include http, ftp, s3,
         and file. For file URLs, a host is expected. For instance, a local
         file could be file://localhost/path/to/workbook.xlsx
@@ -169,7 +170,7 @@ def read_excel(io, sheetname=0, header=0, skiprows=None, skip_footer=0,
         io = ExcelFile(io, engine=engine)
 
     return io._parse_excel(
-        sheetname=sheetname, header=header, skiprows=skiprows,
+        sheetname=sheetname, header=header, skiprows=skiprows, names=names,
         index_col=index_col, parse_cols=parse_cols, parse_dates=parse_dates,
         date_parser=date_parser, na_values=na_values, thousands=thousands,
         convert_float=convert_float, has_index_names=has_index_names,
@@ -184,8 +185,9 @@ class ExcelFile(object):
 
     Parameters
     ----------
-    io : string, file-like object or xlrd workbook
-        If a string, expected to be a path to xls or xlsx file
+    io : string, path object (pathlib.Path or py._path.local.LocalPath),
+        file-like object or xlrd workbook
+        If a string or path object, expected to be a path to xls or xlsx file
     engine: string, default None
         If io is not a buffer or path, this must be set to identify io.
         Acceptable values are None or xlrd
@@ -207,27 +209,28 @@ class ExcelFile(object):
         if engine is not None and engine != 'xlrd':
             raise ValueError("Unknown engine: %s" % engine)
 
-        if isinstance(io, compat.string_types):
-            if _is_s3_url(io):
-                buffer, _, _ = get_filepath_or_buffer(io)
-                self.book = xlrd.open_workbook(file_contents=buffer.read())
-            elif _is_url(io):
-                data = _urlopen(io).read()
-                self.book = xlrd.open_workbook(file_contents=data)
-            else:
-                self.book = xlrd.open_workbook(io)
-        elif engine == 'xlrd' and isinstance(io, xlrd.Book):
+        # If io is a url, want to keep the data as bytes so can't pass
+        # to get_filepath_or_buffer()
+        if _is_url(io):
+            io = _urlopen(io)
+        # Deal with S3 urls, path objects, etc. Will convert them to
+        # buffer or path string
+        io, _, _ = get_filepath_or_buffer(io)
+
+        if engine == 'xlrd' and isinstance(io, xlrd.Book):
             self.book = io
         elif not isinstance(io, xlrd.Book) and hasattr(io, "read"):
             # N.B. xlrd.Book has a read attribute too
             data = io.read()
             self.book = xlrd.open_workbook(file_contents=data)
+        elif isinstance(io, compat.string_types):
+            self.book = xlrd.open_workbook(io)
         else:
             raise ValueError('Must explicitly set engine if not passing in'
                              ' buffer or path for io.')
 
     def parse(self, sheetname=0, header=0, skiprows=None, skip_footer=0,
-              index_col=None, parse_cols=None, parse_dates=False,
+              names=None, index_col=None, parse_cols=None, parse_dates=False,
               date_parser=None, na_values=None, thousands=None,
               convert_float=True, has_index_names=None,
               converters=None, squeeze=False, **kwds):
@@ -239,7 +242,7 @@ class ExcelFile(object):
         """
 
         return self._parse_excel(sheetname=sheetname, header=header,
-                                 skiprows=skiprows,
+                                 skiprows=skiprows, names=names,
                                  index_col=index_col,
                                  has_index_names=has_index_names,
                                  parse_cols=parse_cols,
@@ -285,10 +288,10 @@ class ExcelFile(object):
         else:
             return i in parse_cols
 
-    def _parse_excel(self, sheetname=0, header=0, skiprows=None, skip_footer=0,
-                     index_col=None, has_index_names=None, parse_cols=None,
-                     parse_dates=False, date_parser=None, na_values=None,
-                     thousands=None, convert_float=True,
+    def _parse_excel(self, sheetname=0, header=0, skiprows=None, names=None,
+                     skip_footer=0, index_col=None, has_index_names=None,
+                     parse_cols=None, parse_dates=False, date_parser=None,
+                     na_values=None, thousands=None, convert_float=True,
                      verbose=False, squeeze=False, **kwds):
 
         skipfooter = kwds.pop('skipfooter', None)
@@ -462,10 +465,12 @@ class ExcelFile(object):
                                     **kwds)
 
                 output[asheetname] = parser.read()
+                if names is not None:
+                    output[asheetname].columns = names
                 if not squeeze or isinstance(output[asheetname], DataFrame):
                     output[asheetname].columns = output[
                         asheetname].columns.set_names(header_names)
-            except StopIteration:
+            except EmptyDataError:
                 # No Data, return an empty DataFrame
                 output[asheetname] = DataFrame()
 

@@ -19,7 +19,7 @@ from pandas.compat import (lzip, map, zip, raise_with_traceback,
 from pandas.core.api import DataFrame, Series
 from pandas.core.common import isnull
 from pandas.core.base import PandasObject
-from pandas.core.dtypes import DatetimeTZDtype
+from pandas.types.api import DatetimeTZDtype
 from pandas.tseries.tools import to_datetime
 
 from contextlib import contextmanager
@@ -1248,19 +1248,23 @@ class SQLDatabase(PandasSQL):
                          schema=schema, dtype=dtype)
         table.create()
         table.insert(chunksize)
-        # check for potentially case sensitivity issues (GH7815)
-        engine = self.connectable.engine
-        with self.connectable.connect() as conn:
-            table_names = engine.table_names(
-                schema=schema or self.meta.schema,
-                connection=conn,
-            )
-        if name not in table_names:
-            warnings.warn("The provided table name '{0}' is not found exactly "
-                          "as such in the database after writing the table, "
-                          "possibly due to case sensitivity issues. Consider "
-                          "using lower case table names.".format(name),
-                          UserWarning)
+        if (not name.isdigit() and not name.islower()):
+            # check for potentially case sensitivity issues (GH7815)
+            # Only check when name is not a number and name is not lower case
+            engine = self.connectable.engine
+            with self.connectable.connect() as conn:
+                table_names = engine.table_names(
+                    schema=schema or self.meta.schema,
+                    connection=conn,
+                )
+            if name not in table_names:
+                msg = (
+                    "The provided table name '{0}' is not found exactly as "
+                    "such in the database after writing the table, possibly "
+                    "due to case sensitivity issues. Consider using lower "
+                    "case table names."
+                ).format(name)
+                warnings.warn(msg, UserWarning)
 
     @property
     def tables(self):

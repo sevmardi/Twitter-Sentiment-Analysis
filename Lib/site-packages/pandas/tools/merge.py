@@ -2,6 +2,8 @@
 SQL-style merge routines
 """
 
+import warnings
+
 import numpy as np
 from pandas.compat import range, lrange, lzip, zip, map, filter
 import pandas.compat as compat
@@ -15,11 +17,13 @@ from pandas.core.index import (Index, MultiIndex, _get_combined_index,
 from pandas.core.internals import (items_overlap_with_suffix,
                                    concatenate_block_managers)
 from pandas.util.decorators import Appender, Substitution
-from pandas.core.common import ABCSeries, isnull
+from pandas.core.common import ABCSeries
 
+import pandas.core.algorithms as algos
 import pandas.core.common as com
+import pandas.types.concat as _concat
 
-import pandas.algos as algos
+import pandas.algos as _algos
 import pandas.hashtable as _hash
 
 
@@ -193,6 +197,13 @@ class _MergeOperation(object):
                 'can not merge DataFrame with instance of '
                 'type {0}'.format(type(right)))
 
+        # warn user when merging between different levels
+        if left.columns.nlevels != right.columns.nlevels:
+            msg = ('merging between different levels can give an unintended '
+                   'result ({0} levels on the left, {1} on the right)')
+            msg = msg.format(left.columns.nlevels, right.columns.nlevels)
+            warnings.warn(msg, UserWarning)
+
         # note this function has side effects
         (self.left_join_keys,
          self.right_join_keys,
@@ -291,8 +302,8 @@ class _MergeOperation(object):
 
                         right_na_indexer = right_indexer.take(na_indexer)
                         result.iloc[na_indexer, key_indexer] = (
-                            com.take_1d(self.right_join_keys[i],
-                                        right_na_indexer))
+                            algos.take_1d(self.right_join_keys[i],
+                                          right_na_indexer))
                     elif name in self.right:
                         if len(self.right) == 0:
                             continue
@@ -303,8 +314,8 @@ class _MergeOperation(object):
 
                         left_na_indexer = left_indexer.take(na_indexer)
                         result.iloc[na_indexer, key_indexer] = (
-                            com.take_1d(self.left_join_keys[i],
-                                        left_na_indexer))
+                            algos.take_1d(self.left_join_keys[i],
+                                          left_na_indexer))
             elif left_indexer is not None \
                     and isinstance(self.left_join_keys[i], np.ndarray):
 
@@ -312,11 +323,11 @@ class _MergeOperation(object):
                     name = 'key_%d' % i
 
                 # a faster way?
-                key_col = com.take_1d(self.left_join_keys[i], left_indexer)
+                key_col = algos.take_1d(self.left_join_keys[i], left_indexer)
                 na_indexer = (left_indexer == -1).nonzero()[0]
                 right_na_indexer = right_indexer.take(na_indexer)
-                key_col.put(na_indexer, com.take_1d(self.right_join_keys[i],
-                                                    right_na_indexer))
+                key_col.put(na_indexer, algos.take_1d(self.right_join_keys[i],
+                                                      right_na_indexer))
                 result.insert(i, name, key_col)
 
     def _get_join_info(self):
@@ -576,8 +587,8 @@ class _OrderedMerge(_MergeOperation):
                                                      rdata.items, rsuf)
 
         if self.fill_method == 'ffill':
-            left_join_indexer = algos.ffill_indexer(left_indexer)
-            right_join_indexer = algos.ffill_indexer(right_indexer)
+            left_join_indexer = _algos.ffill_indexer(left_indexer)
+            right_join_indexer = _algos.ffill_indexer(right_indexer)
         else:
             left_join_indexer = left_indexer
             right_join_indexer = right_indexer
@@ -632,16 +643,16 @@ def _get_multiindex_indexer(join_keys, index, sort):
     # factorize keys to a dense i8 space
     lkey, rkey, count = fkeys(lkey, rkey)
 
-    return algos.left_outer_join(lkey, rkey, count, sort=sort)
+    return _algos.left_outer_join(lkey, rkey, count, sort=sort)
 
 
 def _get_single_indexer(join_key, index, sort=False):
     left_key, right_key, count = _factorize_keys(join_key, index, sort=sort)
 
-    left_indexer, right_indexer = \
-        algos.left_outer_join(com._ensure_int64(left_key),
-                              com._ensure_int64(right_key),
-                              count, sort=sort)
+    left_indexer, right_indexer = _algos.left_outer_join(
+        com._ensure_int64(left_key),
+        com._ensure_int64(right_key),
+        count, sort=sort)
 
     return left_indexer, right_indexer
 
@@ -673,14 +684,14 @@ def _left_join_on_index(left_ax, right_ax, join_keys, sort=False):
 
 
 def _right_outer_join(x, y, max_groups):
-    right_indexer, left_indexer = algos.left_outer_join(y, x, max_groups)
+    right_indexer, left_indexer = _algos.left_outer_join(y, x, max_groups)
     return left_indexer, right_indexer
 
 _join_functions = {
-    'inner': algos.inner_join,
-    'left': algos.left_outer_join,
+    'inner': _algos.inner_join,
+    'left': _algos.left_outer_join,
     'right': _right_outer_join,
-    'outer': algos.full_outer_join,
+    'outer': _algos.full_outer_join,
 }
 
 
@@ -905,13 +916,14 @@ class _Concatenator(object):
                     break
 
         else:
-            # filter out the empties
-            # if we have not multi-index possibiltes
-            df = DataFrame([obj.shape for obj in objs]).sum(1)
-            non_empties = df[df != 0]
+            # filter out the empties if we have not multi-index possibiltes
+            # note to keep empty Series as it affect to result columns / name
+            non_empties = [obj for obj in objs
+                           if sum(obj.shape) > 0 or isinstance(obj, Series)]
+
             if (len(non_empties) and (keys is None and names is None and
                                       levels is None and join_axes is None)):
-                objs = [objs[i] for i in non_empties.index]
+                objs = non_empties
                 sample = objs[0]
 
         if sample is None:
@@ -978,30 +990,30 @@ class _Concatenator(object):
 
             # stack blocks
             if self.axis == 0:
-                new_data = com._concat_compat([x._values for x in self.objs])
+                # concat Series with length to keep dtype as much
+                non_empties = [x for x in self.objs if len(x) > 0]
+                if len(non_empties) > 0:
+                    values = [x._values for x in non_empties]
+                else:
+                    values = [x._values for x in self.objs]
+                new_data = _concat._concat_compat(values)
+
                 name = com._consensus_name_attr(self.objs)
-                return (Series(new_data, index=self.new_axes[0], name=name)
+                cons = _concat._get_series_result_type(new_data)
+
+                return (cons(new_data, index=self.new_axes[0],
+                             name=name, dtype=new_data.dtype)
                         .__finalize__(self, method='concat'))
 
             # combine as columns in a frame
             else:
                 data = dict(zip(range(len(self.objs)), self.objs))
+                cons = _concat._get_series_result_type(data)
+
                 index, columns = self.new_axes
-                tmpdf = DataFrame(data, index=index)
-                # checks if the column variable already stores valid column
-                # names (because set via the 'key' argument in the 'concat'
-                # function call. If that's not the case, use the series names
-                # as column names
-                if (columns.equals(Index(np.arange(len(self.objs)))) and
-                        not self.ignore_index):
-                    columns = np.array([data[i].name
-                                        for i in range(len(data))],
-                                       dtype='object')
-                    indexer = isnull(columns)
-                    if indexer.any():
-                        columns[indexer] = np.arange(len(indexer[indexer]))
-                tmpdf.columns = columns
-                return tmpdf.__finalize__(self, method='concat')
+                df = cons(data, index=index)
+                df.columns = columns
+                return df.__finalize__(self, method='concat')
 
         # combine block managers
         else:
@@ -1020,13 +1032,15 @@ class _Concatenator(object):
 
                 mgrs_indexers.append((obj._data, indexers))
 
-            new_data = concatenate_block_managers(
-                mgrs_indexers, self.new_axes,
-                concat_axis=self.axis, copy=self.copy)
+            new_data = concatenate_block_managers(mgrs_indexers,
+                                                  self.new_axes,
+                                                  concat_axis=self.axis,
+                                                  copy=self.copy)
             if not self.copy:
                 new_data._consolidate_inplace()
 
-            return (self.objs[0]._from_axes(new_data, self.new_axes)
+            cons = _concat._get_frame_result_type(new_data, self.objs)
+            return (cons._from_axes(new_data, self.new_axes)
                     .__finalize__(self, method='concat'))
 
     def _get_result_dim(self):
@@ -1079,32 +1093,34 @@ class _Concatenator(object):
             if self.axis == 0:
                 indexes = [x.index for x in self.objs]
             elif self.ignore_index:
-                idx = Index(np.arange(len(self.objs)))
-                idx.is_unique = True  # arange is always unique
+                idx = com._default_index(len(self.objs))
                 return idx
             elif self.keys is None:
-                names = []
-                for x in self.objs:
+                names = [None] * len(self.objs)
+                num = 0
+                has_names = False
+                for i, x in enumerate(self.objs):
                     if not isinstance(x, Series):
                         raise TypeError("Cannot concatenate type 'Series' "
                                         "with object of type "
                                         "%r" % type(x).__name__)
                     if x.name is not None:
-                        names.append(x.name)
+                        names[i] = x.name
+                        has_names = True
                     else:
-                        idx = Index(np.arange(len(self.objs)))
-                        idx.is_unique = True
-                        return idx
-
-                return Index(names)
+                        names[i] = num
+                        num += 1
+                if has_names:
+                    return Index(names)
+                else:
+                    return com._default_index(len(self.objs))
             else:
                 return _ensure_index(self.keys)
         else:
             indexes = [x._data.axes[self.axis] for x in self.objs]
 
         if self.ignore_index:
-            idx = Index(np.arange(sum(len(i) for i in indexes)))
-            idx.is_unique = True
+            idx = com._default_index(sum(len(i) for i in indexes))
             return idx
 
         if self.keys is None:
@@ -1130,6 +1146,7 @@ def _concat_indexes(indexes):
 
 
 def _make_concat_multiindex(indexes, keys, levels=None, names=None):
+
     if ((levels is None and isinstance(keys[0], tuple)) or
             (levels is not None and len(levels) > 1)):
         zipped = lzip(*keys)

@@ -10,7 +10,10 @@ from pandas.core.index import Index, Int64Index
 import pandas.compat as compat
 from pandas.compat import u
 from pandas.tseries.frequencies import to_offset
+from pandas.core.base import _shared_docs
 import pandas.core.common as com
+import pandas.types.concat as _concat
+from pandas.util.decorators import Appender, Substitution
 from pandas.tseries.base import TimelikeOps, DatetimeIndexOpsMixin
 from pandas.tseries.timedeltas import (to_timedelta,
                                        _coerce_scalar_to_timedelta_type)
@@ -265,7 +268,7 @@ class TimedeltaIndex(DatetimeIndexOpsMixin, TimelikeOps, Int64Index):
 
     @property
     def _formatter_func(self):
-        from pandas.core.format import _get_format_timedelta64
+        from pandas.formats.format import _get_format_timedelta64
         return _get_format_timedelta64(self, box=True)
 
     def __setstate__(self, state):
@@ -338,7 +341,7 @@ class TimedeltaIndex(DatetimeIndexOpsMixin, TimelikeOps, Int64Index):
 
     def _format_native_types(self, na_rep=u('NaT'),
                              date_format=None, **kwargs):
-        from pandas.core.format import Timedelta64Formatter
+        from pandas.formats.format import Timedelta64Formatter
         return Timedelta64Formatter(values=self,
                                     nat_rep=na_rep,
                                     justify='all').get_result()
@@ -512,7 +515,7 @@ class TimedeltaIndex(DatetimeIndexOpsMixin, TimelikeOps, Int64Index):
                 break
 
         to_concat = self._ensure_compat_concat(to_concat)
-        return Index(com._concat_compat(to_concat), name=name)
+        return Index(_concat._concat_compat(to_concat), name=name)
 
     def join(self, other, how='left', level=None, return_indexers=False):
         """
@@ -583,7 +586,7 @@ class TimedeltaIndex(DatetimeIndexOpsMixin, TimelikeOps, Int64Index):
         if left_end < right_end:
             loc = right.searchsorted(left_end, side='right')
             right_chunk = right.values[loc:]
-            dates = com._concat_compat((left.values, right_chunk))
+            dates = _concat._concat_compat((left.values, right_chunk))
             return self._shallow_copy(dates)
         else:
             return left
@@ -786,13 +789,15 @@ class TimedeltaIndex(DatetimeIndexOpsMixin, TimelikeOps, Int64Index):
         # # try to find a the dates
         # return (lhs_mask & rhs_mask).nonzero()[0]
 
-    def searchsorted(self, key, side='left'):
+    @Substitution(klass='TimedeltaIndex', value='key')
+    @Appender(_shared_docs['searchsorted'])
+    def searchsorted(self, key, side='left', sorter=None):
         if isinstance(key, (np.ndarray, Index)):
             key = np.array(key, dtype=_TD_DTYPE, copy=False)
         else:
             key = _to_m8(key)
 
-        return self.values.searchsorted(key, side=side)
+        return self.values.searchsorted(key, side=side, sorter=sorter)
 
     def is_type_compatible(self, typ):
         return typ == self.inferred_type or typ == 'timedelta'
@@ -927,9 +932,9 @@ def _is_convertible_to_td(key):
 
 
 def _to_m8(key):
-    '''
+    """
     Timedelta-like => dt64
-    '''
+    """
     if not isinstance(key, Timedelta):
         # this also converts strings
         key = Timedelta(key)

@@ -12,13 +12,15 @@ from distutils.version import LooseVersion
 
 import numpy as np
 
-from pandas.io.common import _is_url, urlopen, parse_url, _validate_header_arg
+from pandas.io.common import (EmptyDataError, _is_url, urlopen,
+                              parse_url, _validate_header_arg)
 from pandas.io.parsers import TextParser
 from pandas.compat import (lrange, lmap, u, string_types, iteritems,
                            raise_with_traceback, binary_type)
 from pandas.core import common as com
 from pandas import Series
 from pandas.core.common import AbstractMethodError
+from pandas.formats.printing import pprint_thing
 
 _IMPORTS = False
 _HAS_BS4 = False
@@ -354,14 +356,16 @@ class _HtmlFrameParser(object):
         res = []
         if thead:
             res = lmap(self._text_getter, self._parse_th(thead[0]))
-        return np.array(res).squeeze() if res and len(res) == 1 else res
+        return np.atleast_1d(
+            np.array(res).squeeze()) if res and len(res) == 1 else res
 
     def _parse_raw_tfoot(self, table):
         tfoot = self._parse_tfoot(table)
         res = []
         if tfoot:
             res = lmap(self._text_getter, self._parse_td(tfoot[0]))
-        return np.array(res).squeeze() if res and len(res) == 1 else res
+        return np.atleast_1d(
+            np.array(res).squeeze()) if res and len(res) == 1 else res
 
     def _parse_raw_tbody(self, table):
         tbody = self._parse_tbody(table)
@@ -683,7 +687,7 @@ def _parser_dispatch(flavor):
 
 
 def _print_as_set(s):
-    return '{%s}' % ', '.join([com.pprint_thing(el) for el in s])
+    return '{%s}' % ', '.join([pprint_thing(el) for el in s])
 
 
 def _validate_flavor(flavor):
@@ -741,7 +745,7 @@ def _parse(flavor, io, match, header, index_col, skiprows,
                                       parse_dates=parse_dates,
                                       tupleize_cols=tupleize_cols,
                                       thousands=thousands))
-        except StopIteration:  # empty table
+        except EmptyDataError:  # empty table
             continue
     return ret
 

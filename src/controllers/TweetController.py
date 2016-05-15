@@ -15,13 +15,13 @@ class TweetController:
 
         self.db = DataBase()
         # self.tweet_gui = tweet_gui
-        self.default_keyword = "Trump"
+        self.default_keyword = ['Obama', 'hillary ', 'Trump']
         self.db.create_table_if_not_exist()
 
     def start_stream(self):
         self.tweet_listener = Listener()
         self.stream = Stream(auth=self.auth, listener=self.tweet_listener)
-        self.stream.filter(track=[self.default_keyword], async=True)
+        self.stream.filter(track=self.default_keyword, async=True)
 
     def stop_stream(self):
         self.stream.disconnect()

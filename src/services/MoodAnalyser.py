@@ -13,13 +13,14 @@ class MoodAnalyser:
         for tweet in tweets:
             count += 1
             self.analyse(tweet, count)
+            # print(tweet)
 
     def analyse(self, tweet, count):
         tweet = "".join(tweet)
-        # processed_text = self.process_text(tweet)
+        processed_text = self.process_text(tweet)
         # calculate mood
         score = 0
-        for word in tweet.split():
+        for word in processed_text:
             if word in mood_values.positive_words:
                 score += 0.6
             if word in mood_values.negative_words:
@@ -28,7 +29,7 @@ class MoodAnalyser:
         self.scoring(score, count)
 
     def scoring(self,tweetScore, tweetNummer):
-        print("Dit is tweet #" + str(tweetNummer))
+        # print("Dit is tweet #" + str(tweetNummer))
         if tweetScore <= -1:
             # tweet is negative
             self.db.set_mood(tweetNummer, '-1')
@@ -39,10 +40,8 @@ class MoodAnalyser:
             # tweet is neutral
             self.db.set_mood(tweetNummer, "0.5")
 
-
-    # @staticmethod
-    def process_text(text):
-        # text = text.lower()
+    def process_text(self, text):
+        text = text.lower()
         # Remove links
         text = re.sub('((www\.[^\s]+)|(https?://[^\s]+)|(http://[^\s]+))', 'URL', text)
         # Remove mentions
@@ -51,7 +50,6 @@ class MoodAnalyser:
         text = re.sub('[\s]+', ' ', text)
         # Remove hashtag from words
         text = re.sub(r'#([^\s]+)', r'\1', text)
-
         # trim
         text = text.strip('\'"')
         # Split text to array

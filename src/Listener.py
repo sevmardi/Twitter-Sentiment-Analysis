@@ -23,7 +23,7 @@ Class used to retrieve Tweets from the twitter api. It uses the Twitter stream a
 
 class Listener(StreamListener):
     # get a dictionary with keys for the twitter api
-    fr = open('config/config.json')
+    fr = open('../config/config.json')
     api_data = json.loads(fr.read())
     fr.close()
 
@@ -36,7 +36,7 @@ class Listener(StreamListener):
         self.analyser = MoodAnalyser()
         # self.save_file = self.tweets
         self.db = DataBase()
-        self.max_tweets = 25
+        self.max_tweets = 20
         print("Listener created")
 
     def on_data(self, data):
@@ -56,7 +56,7 @@ class Listener(StreamListener):
                 if '"' in user:
                     user.replace('"', '')
 
-                self.db.insert_tweet(tweet, user,timestamp)
+                self.db.insert_tweet(tweet, user, timestamp)
             else:
                 # self.on_disconnect()
                 self.analyser.start_up()

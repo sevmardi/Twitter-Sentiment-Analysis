@@ -3,7 +3,7 @@ import sqlite3
 
 class DataBase(object):
     def __init__(self):
-        self.conn = sqlite3.connect('DB/iscp.db', check_same_thread=False)
+        self.conn = sqlite3.connect('../DB/iscp.db', check_same_thread=False)
         self.cur = self.conn.cursor()
 
     def create_table_if_not_exist(self):
@@ -53,3 +53,5 @@ class DataBase(object):
         self.cur.execute("SELECT date, score FROM tweets ORDER BY date ASC")
         data = (self.cur.fetchall())
         return data
+
+

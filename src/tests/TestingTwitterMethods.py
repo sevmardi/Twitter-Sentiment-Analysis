@@ -1,6 +1,6 @@
 import json
 import unittest
-from models import Tweet
+
 
 class TestingTwitterMethods(unittest.TestCase):
 

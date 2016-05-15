@@ -19,7 +19,7 @@ class Main(object):
     def panel(self):
         window = tk.Tk()
 
-        Button1 = tk.Button(window, text="Open de bar chart!", command=lambda: self.createTimechart(), bg="darkblue",
+        Button1 = tk.Button(window, text="Open de bar chart!", command=lambda: self.createPiechart(), bg="darkblue",
                             fg="white", font="Helvetica")
         Button1.config(height=5, width=25, bd=4)
         Button1.pack()

@@ -23,7 +23,7 @@ Class used to retrieve Tweets from the twitter api. It uses the Twitter stream a
 
 class Listener(StreamListener):
     # get a dictionary with keys for the twitter api
-    fr = open('../config/config.json')
+    fr = open('config/config.json')
     api_data = json.loads(fr.read())
     fr.close()
 

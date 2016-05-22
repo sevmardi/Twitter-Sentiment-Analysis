@@ -41,7 +41,6 @@ class MainPanel:
         self.canvas = Canvas(self.tk, width=self.canvas_width, height=self.canvas_height)
         self.canvas.pack()
 
-    def add_
     def set_footer_text(self, footer_text):
         self.statusVar.set(footer_text)
 

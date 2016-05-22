@@ -6,20 +6,20 @@ import matplotlib.pyplot as plt
 import numpy as np
 from src.DB.DataBase import DataBase
 import tkinter as tk
-import datetime
+
 
 
 class Main(object):
-    # def __init__(self):
-    #     self.view = MainPanel()
     def __init__(self):
-        self.db = DataBase()
-        self.panel()
+        self.view = MainPanel()
+    # def __init__(self):
+    #     self.db = DataBase()
+    #     self.panel()
 
     def panel(self):
         window = tk.Tk()
 
-        Button1 = tk.Button(window, text="Open de bar chart!", command=lambda: self.createPiechart(), bg="darkblue",
+        Button1 = tk.Button(window, text="Open de bar chart!", command=lambda: self.createBarchart(), bg="darkblue",
                             fg="white", font="Helvetica")
         Button1.config(height=5, width=25, bd=4)
         Button1.pack()
@@ -69,6 +69,7 @@ class Main(object):
         plt.axis('equal')
 
         plt.show()
+
 
 
 if __name__ == '__main__':

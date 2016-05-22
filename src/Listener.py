@@ -36,7 +36,7 @@ class Listener(StreamListener):
         self.analyser = MoodAnalyser()
         # self.save_file = self.tweets
         self.db = DataBase()
-        self.max_tweets = 20
+        self.max_tweets = 10000
         print("Listener created")
 
     def on_data(self, data):

@@ -30,7 +30,7 @@ class TweetController:
         self.default_keyword = default_keyword
         print(default_keyword)
 
-
-if __name__ == '__main__':
-    controller = TweetController()
-    controller.start_stream()
+#
+# if __name__ == '__main__':
+#     controller = TweetController()
+#     controller.start_stream()

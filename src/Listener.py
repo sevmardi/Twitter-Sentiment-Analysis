@@ -1,9 +1,7 @@
-import tweepy
 import os
 import sys
 import time
 import json
-import sqlite3
 import jsonstruct
 from src.services.MoodAnalyser import MoodAnalyser
 from src.models.Tweet import Tweet
@@ -16,25 +14,17 @@ Class used to retrieve Tweets from the twitter api. It uses the Twitter stream a
 """
 
 
-# tweets = []
-# file name that you want to open is the second argument
-# save_file = open('../data/tweets.json', 'a')
-
-
 class Listener(StreamListener):
     # get a dictionary with keys for the twitter api
-    fr = open('config/config.json')
-    api_data = json.loads(fr.read())
-    fr.close()
+    # fr = open('config/config.json')
+    # api_data = json.loads(fr.read())
+    # fr.close()
 
     def __init__(self, save_location='data/tweets.json'):
         super().__init__()
         self.save_location = save_location
         self.count = 0
-        # self.tweets = []
-        # self.conn = sqlite3.connect('../DB/iscp.db', check_same_thread=False)
         self.analyser = MoodAnalyser()
-        # self.save_file = self.tweets
         self.db = DataBase()
         self.max_tweets = 10000
         print("Listener created")
